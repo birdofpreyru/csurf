@@ -22,7 +22,6 @@ jobs:
       - checkout
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
       - run: npm publish --access public
-      - run: ./bin/release.sh
 
 workflows:
   version: 2
