@@ -1,511 +1,566 @@
+process.env.NODE_ENV = 'test';
 
-process.env.NODE_ENV = 'test'
+const assert = require('assert');
+const connect = require('connect');
+const http = require('http');
+const session = require('cookie-session');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const querystring = require('querystring');
+const request = require('supertest');
 
-var assert = require('assert')
-var connect = require('connect')
-var http = require('http')
-var session = require('cookie-session')
-var bodyParser = require('body-parser')
-var cookieParser = require('cookie-parser')
-var querystring = require('querystring')
-var request = require('supertest')
+const csurf = require('..');
 
-var csurf = require('..')
+function createServer(opts) {
+  const app = connect();
 
-describe('csurf', function () {
-  it('should work in req.body', function (done) {
-    var server = createServer()
+  if (!opts || (opts && !opts.cookie)) {
+    app.use(session({ keys: ['a', 'b'] }));
+  } else if (opts && opts.cookie) {
+    app.use(cookieParser('keyboard cat'));
+  }
+
+  app.use((req, res, next) => {
+    const index = req.url.indexOf('?') + 1;
+
+    if (index) {
+      req.query = querystring.parse(req.url.substring(index));
+    }
+
+    next();
+  });
+  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(csurf(opts));
+
+  app.use((req, res) => {
+    res.end(req.csrfToken() || 'none');
+  });
+
+  return http.createServer(app);
+}
+
+function cookie(res, name) {
+  return res.headers['set-cookie'].filter((items) => items.split('=')[0] === name)[0];
+}
+
+function cookies(res) {
+  return res.headers['set-cookie'].map((items) => items.split(';')[0]).join(';');
+}
+
+describe('csurf', () => {
+  it('should work in req.body', (done) => {
+    const server = createServer();
 
     request(server)
       .get('/')
-      .expect(200, function (err, res) {
-        if (err) return done(err)
-        var token = res.text
+      .expect(200, (err, res) => {
+        if (err) {
+          done(err);
+          return;
+        }
+        const token = res.text;
 
         request(server)
           .post('/')
           .set('Cookie', cookies(res))
-          .send('_csrf=' + encodeURIComponent(token))
-          .expect(200, done)
-      })
-  })
+          .send(`_csrf=${encodeURIComponent(token)}`)
+          .expect(200, done);
+      });
+  });
 
-  it('should work in req.query', function (done) {
-    var server = createServer()
+  it('should work in req.query', (done) => {
+    const server = createServer();
 
     request(server)
       .get('/')
-      .expect(200, function (err, res) {
-        if (err) return done(err)
-        var token = res.text
+      .expect(200, (err, res) => {
+        if (err) {
+          done(err);
+          return;
+        }
+        const token = res.text;
 
         request(server)
-          .post('/?_csrf=' + encodeURIComponent(token))
+          .post(`/?_csrf=${encodeURIComponent(token)}`)
           .set('Cookie', cookies(res))
-          .expect(200, done)
-      })
-  })
+          .expect(200, done);
+      });
+  });
 
-  it('should work in csrf-token header', function (done) {
-    var server = createServer()
+  it('should work in csrf-token header', (done) => {
+    const server = createServer();
 
     request(server)
       .get('/')
-      .expect(200, function (err, res) {
-        if (err) return done(err)
-        var token = res.text
+      .expect(200, (err, res) => {
+        if (err) {
+          done(err);
+          return;
+        }
+        const token = res.text;
 
         request(server)
           .post('/')
           .set('Cookie', cookies(res))
           .set('csrf-token', token)
-          .expect(200, done)
-      })
-  })
+          .expect(200, done);
+      });
+  });
 
-  it('should work in xsrf-token header', function (done) {
-    var server = createServer()
+  it('should work in xsrf-token header', (done) => {
+    const server = createServer();
 
     request(server)
       .get('/')
-      .expect(200, function (err, res) {
-        if (err) return done(err)
-        var token = res.text
+      .expect(200, (err, res) => {
+        if (err) {
+          done(err);
+          return;
+        }
+        const token = res.text;
 
         request(server)
           .post('/')
           .set('Cookie', cookies(res))
           .set('xsrf-token', token)
-          .expect(200, done)
-      })
-  })
+          .expect(200, done);
+      });
+  });
 
-  it('should work in x-csrf-token header', function (done) {
-    var server = createServer()
+  it('should work in x-csrf-token header', (done) => {
+    const server = createServer();
 
     request(server)
       .get('/')
-      .expect(200, function (err, res) {
-        if (err) return done(err)
-        var token = res.text
+      .expect(200, (err, res) => {
+        if (err) {
+          done(err);
+          return;
+        }
+        const token = res.text;
 
         request(server)
           .post('/')
           .set('Cookie', cookies(res))
           .set('x-csrf-token', token)
-          .expect(200, done)
-      })
-  })
+          .expect(200, done);
+      });
+  });
 
-  it('should work in x-xsrf-token header', function (done) {
-    var server = createServer()
+  it('should work in x-xsrf-token header', (done) => {
+    const server = createServer();
 
     request(server)
       .get('/')
-      .expect(200, function (err, res) {
-        if (err) return done(err)
-        var token = res.text
+      .expect(200, (err, res) => {
+        if (err) {
+          done(err);
+          return;
+        }
+        const token = res.text;
 
         request(server)
           .post('/')
           .set('Cookie', cookies(res))
           .set('x-xsrf-token', token)
-          .expect(200, done)
-      })
-  })
+          .expect(200, done);
+      });
+  });
 
-  it('should fail with an invalid token', function (done) {
-    var server = createServer()
+  it('should fail with an invalid token', (done) => {
+    const server = createServer();
 
     request(server)
       .get('/')
-      .expect(200, function (err, res) {
-        if (err) return done(err)
+      .expect(200, (err, res) => {
+        if (err) {
+          done(err);
+          return;
+        }
         request(server)
           .post('/')
           .set('Cookie', cookies(res))
           .set('X-CSRF-Token', '42')
-          .expect(403, done)
-      })
-  })
+          .expect(403, done);
+      });
+  });
 
-  it('should fail with no token', function (done) {
-    var server = createServer()
+  it('should fail with no token', (done) => {
+    const server = createServer();
 
     request(server)
       .get('/')
-      .expect(200, function (err, res) {
-        if (err) return done(err)
+      .expect(200, (err, res) => {
+        if (err) {
+          done(err);
+          return;
+        }
         request(server)
           .post('/')
           .set('Cookie', cookies(res))
-          .expect(403, done)
-      })
-  })
+          .expect(403, done);
+      });
+  });
 
-  it('should provide error code on invalid token error', function (done) {
-    var app = connect()
-    app.use(session({ keys: ['a', 'b'] }))
-    app.use(csurf())
+  it('should provide error code on invalid token error', (done) => {
+    const app = connect();
+    app.use(session({ keys: ['a', 'b'] }));
+    app.use(csurf());
 
-    app.use(function (req, res) {
-      res.end(req.csrfToken() || 'none')
-    })
+    app.use((req, res) => {
+      res.end(req.csrfToken() || 'none');
+    });
 
-    app.use(function (err, req, res, next) {
-      if (err.code !== 'EBADCSRFTOKEN') return next(err)
-      res.statusCode = 403
-      res.end('session has expired or form tampered with')
-    })
+    app.use((err, req, res, next) => {
+      if (err.code !== 'EBADCSRFTOKEN') {
+        next(err);
+        return;
+      }
+      res.statusCode = 403;
+      res.end('session has expired or form tampered with');
+    });
 
     request(app)
       .get('/')
-      .expect(200, function (err, res) {
-        if (err) return done(err)
+      .expect(200, (err, res) => {
+        if (err) {
+          done(err);
+          return;
+        }
         request(app)
           .post('/')
           .set('Cookie', cookies(res))
-          .set('X-CSRF-Token', String(res.text + 'p'))
-          .expect(403, 'session has expired or form tampered with', done)
-      })
-  })
+          .set('X-CSRF-Token', String(`${res.text}p`))
+          .expect(403, 'session has expired or form tampered with', done);
+      });
+  });
 
-  it('should error without session secret storage', function (done) {
-    var app = connect()
+  it('should error without session secret storage', (done) => {
+    const app = connect();
 
-    app.use(csurf())
+    app.use(csurf());
 
     request(app)
       .get('/')
-      .expect(500, /misconfigured csrf/, done)
-  })
+      .expect(500, /misconfigured csrf/, done);
+  });
 
-  describe('with "cookie" option', function () {
-    describe('when true', function () {
-      it('should store secret in "_csrf" cookie', function (done) {
-        var server = createServer({ cookie: true })
+  describe('with "cookie" option', () => {
+    describe('when true', () => {
+      it('should store secret in "_csrf" cookie', (done) => {
+        const server = createServer({ cookie: true });
 
         request(server)
           .get('/')
-          .expect(200, function (err, res) {
-            if (err) return done(err)
-            var data = cookie(res, '_csrf')
-            var token = res.text
+          .expect(200, (err, res) => {
+            if (err) {
+              done(err);
+              return;
+            }
+            const data = cookie(res, '_csrf');
+            const token = res.text;
 
-            assert.ok(Boolean(data))
-            assert.ok(/; *path=\/(?:;|$)/i.test(data))
+            assert.ok(Boolean(data));
+            assert.ok(/; *path=\/(?:;|$)/i.test(data));
 
             request(server)
               .post('/')
               .set('Cookie', cookies(res))
               .set('X-CSRF-Token', token)
-              .expect(200, done)
-          })
-      })
+              .expect(200, done);
+          });
+      });
 
-      it('should append cookie to existing Set-Cookie header', function (done) {
-        var app = connect()
+      it('should append cookie to existing Set-Cookie header', (done) => {
+        const app = connect();
 
-        app.use(cookieParser('keyboard cat'))
-        app.use(function (req, res, next) {
-          res.setHeader('Set-Cookie', 'foo=bar')
-          next()
-        })
-        app.use(csurf({ cookie: true }))
-        app.use(function (req, res) {
-          res.end(req.csrfToken() || 'none')
-        })
+        app.use(cookieParser('keyboard cat'));
+        app.use((req, res, next) => {
+          res.setHeader('Set-Cookie', 'foo=bar');
+          next();
+        });
+        app.use(csurf({ cookie: true }));
+        app.use((req, res) => {
+          res.end(req.csrfToken() || 'none');
+        });
 
         request(app)
           .get('/')
-          .expect(200, function (err, res) {
-            if (err) return done(err)
-            var token = res.text
+          .expect(200, (err, res) => {
+            if (err) {
+              done(err);
+              return;
+            }
+            const token = res.text;
 
-            assert.ok(Boolean(cookie(res, '_csrf')))
-            assert.ok(Boolean(cookie(res, 'foo')))
+            assert.ok(Boolean(cookie(res, '_csrf')));
+            assert.ok(Boolean(cookie(res, 'foo')));
 
             request(app)
               .post('/')
               .set('Cookie', cookies(res))
               .set('X-CSRF-Token', token)
-              .expect(200, done)
-          })
-      })
-    })
+              .expect(200, done);
+          });
+      });
+    });
 
-    describe('when an object', function () {
-      it('should configure the cookie name with "key"', function (done) {
-        var server = createServer({ cookie: { key: '_customcsrf' } })
+    describe('when an object', () => {
+      it('should configure the cookie name with "key"', (done) => {
+        const server = createServer({ cookie: { key: '_customcsrf' } });
 
         request(server)
           .get('/')
-          .expect(200, function (err, res) {
-            if (err) return done(err)
-            var data = cookie(res, '_customcsrf')
-            var token = res.text
+          .expect(200, (err, res) => {
+            if (err) {
+              done(err);
+              return;
+            }
+            const data = cookie(res, '_customcsrf');
+            const token = res.text;
 
-            assert.ok(Boolean(data))
-            assert.ok(/; *path=\/(?:;|$)/i.test(data))
+            assert.ok(Boolean(data));
+            assert.ok(/; *path=\/(?:;|$)/i.test(data));
 
             request(server)
               .post('/')
               .set('Cookie', cookies(res))
               .set('X-CSRF-Token', token)
-              .expect(200, done)
-          })
-      })
+              .expect(200, done);
+          });
+      });
 
-      it('should keep default cookie name when "key: undefined"', function (done) {
-        var server = createServer({ cookie: { key: undefined } })
+      it('should keep default cookie name when "key: undefined"', (done) => {
+        const server = createServer({ cookie: { key: undefined } });
 
         request(server)
           .get('/')
-          .expect(200, function (err, res) {
-            if (err) return done(err)
-            var data = cookie(res, '_csrf')
-            var token = res.text
+          .expect(200, (err, res) => {
+            if (err) {
+              done(err);
+              return;
+            }
+            const data = cookie(res, '_csrf');
+            const token = res.text;
 
-            assert.ok(Boolean(data))
-            assert.ok(/; *path=\/(?:;|$)/i.test(data))
+            assert.ok(Boolean(data));
+            assert.ok(/; *path=\/(?:;|$)/i.test(data));
 
             request(server)
               .post('/')
               .set('Cookie', cookies(res))
               .set('X-CSRF-Token', token)
-              .expect(200, done)
-          })
-      })
+              .expect(200, done);
+          });
+      });
 
-      describe('when "signed": true', function () {
-        it('should enable signing', function (done) {
-          var server = createServer({ cookie: { signed: true } })
+      describe('when "signed": true', () => {
+        it('should enable signing', (done) => {
+          const server = createServer({ cookie: { signed: true } });
 
           request(server)
             .get('/')
-            .expect(200, function (err, res) {
-              if (err) return done(err)
-              var data = cookie(res, '_csrf')
-              var token = res.text
+            .expect(200, (err, res) => {
+              if (err) {
+                done(err);
+                return;
+              }
+              const data = cookie(res, '_csrf');
+              const token = res.text;
 
-              assert.ok(Boolean(data))
-              assert.ok(/^_csrf=s%3A/i.test(data))
+              assert.ok(Boolean(data));
+              assert.ok(/^_csrf=s%3A/i.test(data));
 
               request(server)
                 .post('/')
                 .set('Cookie', cookies(res))
                 .set('X-CSRF-Token', token)
-                .expect(200, done)
-            })
-        })
+                .expect(200, done);
+            });
+        });
 
-        it('should error without cookieParser', function (done) {
-          var app = connect()
+        it('should error without cookieParser', (done) => {
+          const app = connect();
 
-          app.use(csurf({ cookie: { signed: true } }))
-
-          request(app)
-            .get('/')
-            .expect(500, /misconfigured csrf/, done)
-        })
-
-        it('should error when cookieParser is missing secret', function (done) {
-          var app = connect()
-
-          app.use(cookieParser())
-          app.use(csurf({ cookie: { signed: true } }))
+          app.use(csurf({ cookie: { signed: true } }));
 
           request(app)
             .get('/')
-            .expect(500, /misconfigured csrf/, done)
-        })
-      })
-    })
-  })
+            .expect(500, /misconfigured csrf/, done);
+        });
 
-  describe('with "ignoreMethods" option', function () {
-    it('should reject invalid value', function () {
-      assert.throws(createServer.bind(null, { ignoreMethods: 'tj' }), /option ignoreMethods/)
-    })
+        it('should error when cookieParser is missing secret', (done) => {
+          const app = connect();
 
-    it('should not check token on given methods', function (done) {
-      var server = createServer({ ignoreMethods: ['GET', 'POST'] })
+          app.use(cookieParser());
+          app.use(csurf({ cookie: { signed: true } }));
+
+          request(app)
+            .get('/')
+            .expect(500, /misconfigured csrf/, done);
+        });
+      });
+    });
+  });
+
+  describe('with "ignoreMethods" option', () => {
+    it('should reject invalid value', () => {
+      assert.throws(createServer.bind(null, { ignoreMethods: 'tj' }), /option ignoreMethods/);
+    });
+
+    it('should not check token on given methods', (done) => {
+      const server = createServer({ ignoreMethods: ['GET', 'POST'] });
 
       request(server)
         .get('/')
-        .expect(200, function (err, res) {
-          if (err) return done(err)
-          var cookie = cookies(res)
+        .expect(200, (err, res) => {
+          if (err) {
+            done(err);
+            return;
+          }
+          const cookie2 = cookies(res);
           request(server)
             .post('/')
-            .set('Cookie', cookie)
-            .expect(200, function (err, res) {
-              if (err) return done(err)
+            .set('Cookie', cookie2)
+            .expect(200, (err2) => {
+              if (err2) {
+                done(err2);
+                return;
+              }
               request(server)
                 .put('/')
-                .set('Cookie', cookie)
-                .expect(403, done)
-            })
-        })
-    })
-  })
+                .set('Cookie', cookie2)
+                .expect(403, done);
+            });
+        });
+    });
+  });
 
-  describe('with "sessionKey" option', function () {
-    it('should use the specified sessionKey', function (done) {
-      var app = connect()
-      var sess = {}
+  describe('with "sessionKey" option', () => {
+    it('should use the specified sessionKey', (done) => {
+      const app = connect();
+      const sess = {};
 
-      app.use(function (req, res, next) {
-        req.mySession = sess
-        next()
-      })
-      app.use(bodyParser.urlencoded({ extended: false }))
-      app.use(csurf({ sessionKey: 'mySession' }))
-      app.use(function (req, res, next) {
-        res.end(req.csrfToken() || 'none')
-      })
+      app.use((req, res, next) => {
+        req.mySession = sess;
+        next();
+      });
+      app.use(bodyParser.urlencoded({ extended: false }));
+      app.use(csurf({ sessionKey: 'mySession' }));
+      app.use((req, res) => {
+        res.end(req.csrfToken() || 'none');
+      });
 
       request(app)
         .get('/')
-        .expect(200, function (err, res) {
-          if (err) return done(err)
-          var token = res.text
+        .expect(200, (err, res) => {
+          if (err) {
+            done(err);
+            return;
+          }
+          const token = res.text;
 
           request(app)
             .post('/')
-            .send('_csrf=' + encodeURIComponent(token))
-            .expect(200, done)
-        })
-    })
-  })
+            .send(`_csrf=${encodeURIComponent(token)}`)
+            .expect(200, done);
+        });
+    });
+  });
 
-  describe('req.csrfToken()', function () {
-    it('should return same token for each call', function (done) {
-      var app = connect()
-      app.use(session({ keys: ['a', 'b'] }))
-      app.use(csurf())
-      app.use(function (req, res) {
-        var token1 = req.csrfToken()
-        var token2 = req.csrfToken()
-        res.end(String(token1 === token2))
-      })
+  describe('req.csrfToken()', () => {
+    it('should return same token for each call', (done) => {
+      const app = connect();
+      app.use(session({ keys: ['a', 'b'] }));
+      app.use(csurf());
+      app.use((req, res) => {
+        const token1 = req.csrfToken();
+        const token2 = req.csrfToken();
+        res.end(String(token1 === token2));
+      });
 
       request(app)
         .get('/')
-        .expect(200, 'true', done)
-    })
+        .expect(200, 'true', done);
+    });
 
-    it('should error when secret storage missing', function (done) {
-      var app = connect()
+    it('should error when secret storage missing', (done) => {
+      const app = connect();
 
-      app.use(session({ keys: ['a', 'b'] }))
-      app.use(csurf())
-      app.use(function (req, res) {
-        req.session = null
-        res.setHeader('x-run', 'true')
-        res.end(req.csrfToken())
-      })
+      app.use(session({ keys: ['a', 'b'] }));
+      app.use(csurf());
+      app.use((req, res) => {
+        req.session = null;
+        res.setHeader('x-run', 'true');
+        res.end(req.csrfToken());
+      });
 
       request(app)
         .get('/')
         .expect('x-run', 'true')
-        .expect(500, /misconfigured csrf/, done)
-    })
-  })
+        .expect(500, /misconfigured csrf/, done);
+    });
+  });
 
-  describe('when using session storage', function () {
-    var app
-    before(function () {
-      app = connect()
-      app.use(session({ keys: ['a', 'b'] }))
-      app.use(csurf())
-      app.use('/break', function (req, res, next) {
+  describe('when using session storage', () => {
+    let app;
+    before(() => {
+      app = connect();
+      app.use(session({ keys: ['a', 'b'] }));
+      app.use(csurf());
+      app.use('/break', (req, res, next) => {
         // break session
-        req.session = null
-        next()
-      })
-      app.use('/new', function (req, res, next) {
+        req.session = null;
+        next();
+      });
+      app.use('/new', (req, res, next) => {
         // regenerate session
-        req.session = { hit: 1 }
-        next()
-      })
-      app.use(function (req, res) {
-        res.end(req.csrfToken() || 'none')
-      })
-    })
+        req.session = { hit: 1 };
+        next();
+      });
+      app.use((req, res) => {
+        res.end(req.csrfToken() || 'none');
+      });
+    });
 
-    it('should work with a valid token', function (done) {
+    it('should work with a valid token', (done) => {
       request(app)
         .get('/')
-        .expect(200, function (err, res) {
-          if (err) return done(err)
-          var token = res.text
+        .expect(200, (err, res) => {
+          if (err) {
+            done(err);
+            return;
+          }
+          const token = res.text;
           request(app)
             .post('/')
             .set('Cookie', cookies(res))
             .set('X-CSRF-Token', token)
-            .expect(200, done)
-        })
-    })
+            .expect(200, done);
+        });
+    });
 
-    it('should provide a valid token when session regenerated', function (done) {
+    it('should provide a valid token when session regenerated', (done) => {
       request(app)
         .get('/new')
-        .expect(200, function (err, res) {
-          if (err) return done(err)
-          var token = res.text
+        .expect(200, (err, res) => {
+          if (err) {
+            done(err);
+            return;
+          }
+          const token = res.text;
           request(app)
             .post('/')
             .set('Cookie', cookies(res))
             .set('X-CSRF-Token', token)
-            .expect(200, done)
-        })
-    })
+            .expect(200, done);
+        });
+    });
 
-    it('should error if session missing', function (done) {
+    it('should error if session missing', (done) => {
       request(app)
         .get('/break')
-        .expect(500, /misconfigured csrf/, done)
-    })
-  })
-})
-
-function cookie (res, name) {
-  return res.headers['set-cookie'].filter(function (cookies) {
-    return cookies.split('=')[0] === name
-  })[0]
-}
-
-function cookies (res) {
-  return res.headers['set-cookie'].map(function (cookies) {
-    return cookies.split(';')[0]
-  }).join(';')
-}
-
-function createServer (opts) {
-  var app = connect()
-
-  if (!opts || (opts && !opts.cookie)) {
-    app.use(session({ keys: ['a', 'b'] }))
-  } else if (opts && opts.cookie) {
-    app.use(cookieParser('keyboard cat'))
-  }
-
-  app.use(function (req, res, next) {
-    var index = req.url.indexOf('?') + 1
-
-    if (index) {
-      req.query = querystring.parse(req.url.substring(index))
-    }
-
-    next()
-  })
-  app.use(bodyParser.urlencoded({ extended: false }))
-  app.use(csurf(opts))
-
-  app.use(function (req, res) {
-    res.end(req.csrfToken() || 'none')
-  })
-
-  return http.createServer(app)
-}
+        .expect(500, /misconfigured csrf/, done);
+    });
+  });
+});
