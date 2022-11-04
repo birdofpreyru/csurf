@@ -1,5 +1,7 @@
 # csurf
 
+_This is a fork of the original [csurf](https://www.npmjs.com/package/csurf) package deprecated by its author, published under the name `@dr.pogodin/csurf` and as of version **1.11.0** matching exatly the last version **1.11.0** of the deprecated package._
+
 [![NPM Version][npm-version-image]][npm-url]
 [![NPM Downloads][npm-downloads-image]][node-url]
 [![Build status][travis-image]][travis-url]
@@ -26,7 +28,7 @@ This is a [Node.js](https://nodejs.org/en/) module available through the
 [`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
 
 ```sh
-$ npm install csurf
+$ npm install @dr.pogodin/csurf
 ```
 
 ## API
@@ -34,7 +36,7 @@ $ npm install csurf
 <!-- eslint-disable no-unused-vars -->
 
 ```js
-var csurf = require('csurf')
+var csurf = require('@dr.pogodin/csurf')
 ```
 
 ### csurf([options])
@@ -123,7 +125,7 @@ that requires a CSRF token to post back.
 
 ```js
 var cookieParser = require('cookie-parser')
-var csrf = require('csurf')
+var csrf = require('@dr.pogodin/csurf')
 var bodyParser = require('body-parser')
 var express = require('express')
 
@@ -238,7 +240,7 @@ do not check for a valid CSRF token.
 
 ```js
 var cookieParser = require('cookie-parser')
-var csrf = require('csurf')
+var csrf = require('@dr.pogodin/csurf')
 var bodyParser = require('body-parser')
 var express = require('express')
 
@@ -285,7 +287,7 @@ error messages.
 ```js
 var bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser')
-var csrf = require('csurf')
+var csrf = require('@dr.pogodin/csurf')
 var express = require('express')
 
 var app = express()
