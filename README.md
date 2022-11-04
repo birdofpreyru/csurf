@@ -1,11 +1,16 @@
-# csurf
+# CSURF
 
-_This is a fork of the original [csurf](https://www.npmjs.com/package/csurf) package deprecated by its author, published under the name `@dr.pogodin/csurf` and as of version **1.11.0** matching exatly the last version **1.11.0** of the deprecated package._
+[![Latest NPM Release](https://img.shields.io/npm/v/@dr.pogodin/csurf.svg)](https://www.npmjs.com/package/@dr.pogodin/csurf)
+[![NPM Downloads](https://img.shields.io/npm/dm/@dr.pogodin/csurf.svg)](https://www.npmjs.com/package/@dr.pogodin/csurf)
+[![GitHub Repo stars](https://img.shields.io/github/stars/birdofpreyru/csurf?style=social)](https://github.com/birdofpreyru/csurf)
 
-[![NPM Version][npm-version-image]][npm-url]
-[![NPM Downloads][npm-downloads-image]][node-url]
-[![Build status][travis-image]][travis-url]
-[![Test coverage][coveralls-image]][coveralls-url]
+[csurf]: https://www.npmjs.com/package/csurf
+[@dr.pogodin/csurf]: https://www.npmjs.com/package/@dr.pogodin/csurf
+
+---
+_This is a fork of the original [csurf] package which was deprecated by its author with doubtful reasoning (in the nutshell the package was alright, but author did not want to maintain it anymore). It is published to NPM as [@dr.pogodin/csurf], its version **1.11.0** exactly matches the same, latest version of the original package, its versions starting from **1.12.0** have all dependencies updated to their latest versions, and misc maintenance performed as needed. To migrate from the original [csurf] just replace all references to it by [@dr.pogodin/csurf]._
+
+---
 
 Node.js [CSRF][wikipedia-csrf] protection middleware.
 
@@ -27,8 +32,8 @@ This is a [Node.js](https://nodejs.org/en/) module available through the
 [npm registry](https://www.npmjs.com/). Installation is done using the
 [`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
 
-```sh
-$ npm install @dr.pogodin/csurf
+```shell
+$ npm install --save @dr.pogodin/csurf
 ```
 
 ## API
