@@ -4,15 +4,14 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/@dr.pogodin/csurf.svg)](https://www.npmjs.com/package/@dr.pogodin/csurf)
 [![GitHub Repo stars](https://img.shields.io/github/stars/birdofpreyru/csurf?style=social)](https://github.com/birdofpreyru/csurf)
 
-[csurf]: https://www.npmjs.com/package/csurf
-[@dr.pogodin/csurf]: https://www.npmjs.com/package/@dr.pogodin/csurf
+Node.js [CSRF][wikipedia-csrf] protection middleware for [ExpressJS].
+
+[![Sponsor](.README/sponsor.png)](https://github.com/sponsors/birdofpreyru)
 
 ---
 _This is a fork of the original [csurf] package which was deprecated by its author with doubtful reasoning (in the nutshell the package was alright, but author did not want to maintain it anymore). It is published to NPM as [@dr.pogodin/csurf], its version **1.11.0** exactly matches the same, latest version of the original package, its versions starting from **1.12.0** have all dependencies updated to their latest versions, and misc maintenance performed as needed. To migrate from the original [csurf] just replace all references to it by [@dr.pogodin/csurf]._
 
 ---
-
-Node.js [CSRF][wikipedia-csrf] protection middleware.
 
 Requires either a session middleware or [cookie-parser](https://www.npmjs.com/package/cookie-parser) to be initialized first.
 
@@ -323,11 +322,7 @@ app.use(function (err, req, res, next) {
 
 [MIT](LICENSE)
 
-[coveralls-image]: https://badgen.net/coveralls/c/github/expressjs/csurf/master
-[coveralls-url]: https://coveralls.io/r/expressjs/csurf?branch=master
-[node-url]: https://nodejs.org/en/download
-[npm-downloads-image]: https://badgen.net/npm/dm/csurf
-[npm-url]: https://npmjs.org/package/csurf
-[npm-version-image]: https://badgen.net/npm/v/csurf
-[travis-image]: https://badgen.net/travis/expressjs/csurf/master
-[travis-url]: https://travis-ci.org/expressjs/csurf
+<!-- Links -->
+[csurf]: https://www.npmjs.com/package/csurf
+[@dr.pogodin/csurf]: https://www.npmjs.com/package/@dr.pogodin/csurf
+[ExpressJS]: https://expressjs.com
