@@ -1,8 +1,11 @@
 # The MIT License
 
-_Copyright &copy; 2014 Jonathan Ong <me@jongleberry.com>_ \
-_Copyright &copy; 2014-2016 Douglas Christopher Wilson <doug@somethingdoug.com>_ \
-_Copyright &copy; 2022 Dr. Sergey Pogodin <doc@pogodin.studio> (https://dr.pogodin.studio)_
+_Copyright &copy; 2022&ndash;2023, Dr. Sergey Pogodin_
+  &mdash; <doc@pogodin.studio> (https://dr.pogodin.studio) \
+_Copyright &copy; 2014&ndash;2016 Douglas Christopher Wilson_
+  &mdash; <doug@somethingdoug.com> \
+_Copyright &copy; 2014 Jonathan Ong_
+  &mdash; <me@jongleberry.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
