@@ -37,12 +37,12 @@ _This is a fork of the original [csurf] package which was deprecated by its auth
   This library has options allowing to mitigate these possibilities (by opting
   for various security options for CSRF cookies, which will instruct the browser
   to not pass CSRF cookie over insecure connections, _etc._), but, by default,
-  the library does not eforce these options.
+  the library does not enforce these options.
 
   [Some argue](https://github.com/birdofpreyru/csurf/issues/1) that not
   enforcing these options by default is against security, and requires
   deprecation of the library (like happened to its upstream original);
-  IMHO, enforcing these options just adds headache in more common scenarious,
+  IMHO, enforcing these options just adds headache in more common scenarios,
   and here is no security issue with the library, as long as it does exactly
   what users asks it to do.
 ---
