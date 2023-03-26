@@ -12,6 +12,40 @@ Node.js [CSRF][wikipedia-csrf] protection middleware for [ExpressJS].
 _This is a fork of the original [csurf] package which was deprecated by its author with doubtful reasoning (in the nutshell the package was alright, but author did not want to maintain it anymore). It is published to NPM as [@dr.pogodin/csurf], its version **1.11.0** exactly matches the same, latest version of the original package, its versions starting from **1.12.0** have all dependencies updated to their latest versions, and misc maintenance performed as needed. To migrate from the original [csurf] just replace all references to it by [@dr.pogodin/csurf]._
 
 ---
+### Security Considerations
+[Double Submit Cookie]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie
+[XSS]: https://owasp.org/www-community/attacks/xss
+
+- **[Double Submit Cookie]** &mdash; This mode of CSRF protection relies on
+  the inability of code from a 3rd-party origin to read/write cookies stored,
+  and sent by browser for the protected origin. Sure, there are ways you may
+  ruin it, if you don't know what you are doing:
+
+  - Serving your website over unsecure HTTP connection &mdash;
+    a man in the middle might read your cookies (and everything else)
+    you send over, and exploit your negligence in all posible ways,
+    including but not limited to by-passing double submit cookie CSRF
+    protection.
+  - Allowing [XSS] injection &mdash; if 3rd party is able to inject arbitrary
+    code inside your own website, sure they can read the cookie and by-pass CSRF
+    protection.
+  - Allowing 3rd parties to control your sub-domains (a code running on
+    sub-domain may shadow CSRF cookie set by the protected domain, thus allowing
+    to by-pass CSRF protection).
+  - _etc._
+
+  This library has options allowing to mitigate these possibilities (by opting
+  for various security options for CSRF cookies, which will instruct the browser
+  to not pass CSRF cookie over insecure connections, _etc._), but, by default,
+  the library does not eforce these options.
+
+  [Some argue](https://github.com/birdofpreyru/csurf/issues/1) that not
+  enforcing these options by default is against security, and requires
+  deprecation of the library (like happened to its upstream original);
+  IMHO, enforcing these options just adds headache in more common scenarious,
+  and here is no security issue with the library, as long as it does exactly
+  what users asks it to do.
+---
 
 Requires either a session middleware or [cookie-parser](https://www.npmjs.com/package/cookie-parser) to be initialized first.
 
