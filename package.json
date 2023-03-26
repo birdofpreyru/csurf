@@ -12,15 +12,17 @@
   "dependencies": {
     "cookie": "^0.5.0",
     "cookie-signature": "^1.2.0",
-    "csrf": "3.1.0",
-    "http-errors": "^2.0.0"
+    "http-errors": "^2.0.0",
+    "rndm": "1.2.0",
+    "tsscmp": "1.0.6",
+    "uid-safe": "2.1.5"
   },
   "devDependencies": {
-    "body-parser": "1.20.1",
+    "body-parser": "1.20.2",
     "connect": "3.7.0",
     "cookie-parser": "1.4.6",
     "cookie-session": "2.0.0",
-    "eslint": "^8.32.0",
+    "eslint": "^8.36.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
     "mocha": "10.2.0",

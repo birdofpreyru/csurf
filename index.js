@@ -14,7 +14,7 @@
 const Cookie = require('cookie');
 const createError = require('http-errors');
 const { sign } = require('cookie-signature');
-const Tokens = require('csrf');
+const Tokens = require('./tokens');
 
 /**
  * Get options for cookie.
