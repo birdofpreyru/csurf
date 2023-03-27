@@ -40,7 +40,8 @@
   },
   "files": [
     "LICENSE",
-    "index.js"
+    "index.js",
+    "tokens.js"
   ],
   "keywords": [
     "csrf",
