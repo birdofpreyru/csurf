@@ -1,7 +1,7 @@
 {
   "name": "@dr.pogodin/csurf",
   "description": "CSRF token middleware for ExpressJS",
-  "version": "1.12.3",
+  "version": "1.12.4",
   "license": "MIT",
   "repository": "github:birdofpreyru/csurf",
   "bugs": {
@@ -38,11 +38,6 @@
     "test": "npm run lint && npm run mocha",
     "test-cov": "nyc --reporter=html --reporter=text npm test"
   },
-  "files": [
-    "LICENSE",
-    "index.js",
-    "tokens.js"
-  ],
   "keywords": [
     "csrf",
     "tokens",
