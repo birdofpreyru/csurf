@@ -2,11 +2,13 @@
 
 [![Latest NPM Release](https://img.shields.io/npm/v/@dr.pogodin/csurf.svg)](https://www.npmjs.com/package/@dr.pogodin/csurf)
 [![NPM Downloads](https://img.shields.io/npm/dm/@dr.pogodin/csurf.svg)](https://www.npmjs.com/package/@dr.pogodin/csurf)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/birdofpreyru/csurf/tree/master.svg?style=shield)](https://app.circleci.com/pipelines/github/birdofpreyru/csurf)
 [![GitHub Repo stars](https://img.shields.io/github/stars/birdofpreyru/csurf?style=social)](https://github.com/birdofpreyru/csurf)
+[![Dr. Pogodin Studio](https://raw.githubusercontent.com/birdofpreyru/csurf/master/.README/logo-dr-pogodin-studio.svg)](https://dr.pogodin.studio/docs/csurf)
 
 Node.js [CSRF][wikipedia-csrf] protection middleware for [ExpressJS].
 
-[![Sponsor](.README/sponsor.png)](https://github.com/sponsors/birdofpreyru)
+[![Sponsor](https://raw.githubusercontent.com/birdofpreyru/csurf/master/.README/sponsor.svg)](https://github.com/sponsors/birdofpreyru)
 
 ---
 _This is a fork of the original [csurf] package which was deprecated by its author with doubtful reasoning (in the nutshell the package was alright, but author did not want to maintain it anymore). It is published to NPM as [@dr.pogodin/csurf], its version **1.11.0** exactly matches the same, latest version of the original package, its versions starting from **1.12.0** have all dependencies updated to their latest versions, and misc maintenance performed as needed. To migrate from the original [csurf] just replace all references to it by [@dr.pogodin/csurf]._
