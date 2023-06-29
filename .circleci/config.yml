@@ -1,7 +1,7 @@
 install-and-test: &install-and-test
   - checkout
   - restore_cache:
-      key: node-modules-{{ checksum "package-lock.json "}}
+      key: node-modules-{{ checksum "package-lock.json" }}
   - run: npm install
   - save_cache:
       key: node-modules-{{ checksum "package-lock.json" }}
