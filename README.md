@@ -10,6 +10,12 @@ Node.js [CSRF][wikipedia-csrf] protection middleware for [ExpressJS].
 
 [![Sponsor](https://raw.githubusercontent.com/birdofpreyru/csurf/master/.README/sponsor.svg)](https://github.com/sponsors/birdofpreyru)
 
+### [Contributors](https://github.com/birdofpreyru/csurf/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/818316?v=4&s=36" />](https://github.com/bchew)
+[<img width=36 src="https://avatars.githubusercontent.com/u/8205343?v=4&s=36" />](https://github.com/mattbaileyuk)
+[<img width=36 src="https://avatars.githubusercontent.com/u/20144632?s=36" />](https://github.com/birdofpreyru)
+<br />[+ contributors of the original `csurf`](https://github.com/expressjs/csurf/graphs/contributors)
+
 ---
 _This is a fork of the original [csurf] package which was deprecated by its author with doubtful reasoning (in the nutshell the package was alright, but author did not want to maintain it anymore). It is published to NPM as [@dr.pogodin/csurf], its version **1.11.0** exactly matches the same, latest version of the original package, its versions starting from **1.12.0** have all dependencies updated to their latest versions, and misc maintenance performed as needed. To migrate from the original [csurf] just replace all references to it by [@dr.pogodin/csurf]._
 
