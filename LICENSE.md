@@ -1,6 +1,6 @@
 # The MIT License
 
-_Copyright &copy; 2022&ndash;2023, Dr. Sergey Pogodin_
+_Copyright &copy; 2022&ndash;2024, Dr. Sergey Pogodin_
   &mdash; <doc@pogodin.studio> (https://dr.pogodin.studio) \
 _Copyright &copy; 2014&ndash;2016 Douglas Christopher Wilson_
   &mdash; <doug@somethingdoug.com> \
