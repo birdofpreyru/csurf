@@ -10,8 +10,8 @@
   "homepage": "https://dr.pogodin.studio/docs/csurf",
   "main": "index.js",
   "dependencies": {
-    "cookie": "^0.5.0",
-    "cookie-signature": "^1.2.0",
+    "cookie": "^0.7.2",
+    "cookie-signature": "^1.2.1",
     "http-errors": "^2.0.0",
     "rndm": "1.2.0",
     "tsscmp": "1.0.6",
@@ -20,8 +20,8 @@
   "devDependencies": {
     "body-parser": "1.20.2",
     "connect": "3.7.0",
-    "cookie-parser": "1.4.6",
-    "cookie-session": "2.0.0",
+    "cookie-parser": "^1.4.7",
+    "cookie-session": "^2.1.0",
     "eslint": "^8.43.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
