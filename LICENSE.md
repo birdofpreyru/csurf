@@ -2,9 +2,9 @@
 
 _Copyright &copy; 2022&ndash;2024, Dr. Sergey Pogodin_
   &mdash; <doc@pogodin.studio> (https://dr.pogodin.studio) \
-_Copyright &copy; 2014&ndash;2016 Douglas Christopher Wilson_
+_Copyright &copy; 2014&ndash;2016, Douglas Christopher Wilson_
   &mdash; <doug@somethingdoug.com> \
-_Copyright &copy; 2014 Jonathan Ong_
+_Copyright &copy; 2014, Jonathan Ong_
   &mdash; <me@jongleberry.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
