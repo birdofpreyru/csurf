@@ -11,6 +11,7 @@ Node.js [CSRF][wikipedia-csrf] protection middleware for [ExpressJS].
 [![Sponsor](https://raw.githubusercontent.com/birdofpreyru/csurf/master/.README/sponsor.svg)](https://github.com/sponsors/birdofpreyru)
 
 ### [Contributors](https://github.com/birdofpreyru/csurf/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/33452?v=4&s=36" />](https://github.com/pietia)
 [<img width=36 src="https://avatars.githubusercontent.com/u/818316?v=4&s=36" />](https://github.com/bchew)
 [<img width=36 src="https://avatars.githubusercontent.com/u/8205343?v=4&s=36" />](https://github.com/mattbaileyuk)
 [<img width=36 src="https://avatars.githubusercontent.com/u/20144632?s=36" />](https://github.com/birdofpreyru)
