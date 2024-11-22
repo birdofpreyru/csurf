@@ -25,14 +25,14 @@ const PLUS_GLOBAL_REGEXP = /\+/g;
 const SLASH_GLOBAL_REGEXP = /\//g;
 
 /**
- * Hash a string with SHA1, returning url-safe base64
+ * Hash a string with SHA256, returning url-safe base64
  * @param {string} str
  * @private
  */
 
 function hash(str) {
   return crypto
-    .createHash('sha1')
+    .createHash('sha256')
     .update(str, 'ascii')
     .digest('base64')
     .replace(PLUS_GLOBAL_REGEXP, '-')
