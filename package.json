@@ -18,22 +18,22 @@
     "uid-safe": "2.1.5"
   },
   "devDependencies": {
-    "body-parser": "^1.20.3",
+    "@dr.pogodin/eslint-configs": "^0.0.3",
+    "body-parser": "^2.2.0",
     "connect": "3.7.0",
     "cookie-parser": "^1.4.7",
     "cookie-session": "^2.1.0",
-    "eslint": "^8.57.1",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.31.0",
-    "mocha": "^11.0.1",
+    "eslint": "^9.25.1",
+    "globals": "^16.0.0",
+    "mocha": "^11.1.0",
     "nyc": "^17.1.0",
-    "supertest": "^7.0.0"
+    "supertest": "^7.1.0"
   },
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "lint": "eslint --ext js .",
+    "lint": "eslint",
     "mocha": "mocha --check-leaks --reporter spec --bail test/",
     "test": "npm run lint && npm run mocha",
     "test-cov": "nyc --reporter=html --reporter=text npm test"

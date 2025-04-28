@@ -261,7 +261,7 @@ describe('csurf', () => {
             const token = res.text;
 
             assert.ok(Boolean(data));
-            assert.ok(/; *path=\/(?:;|$)/i.test(data));
+            assert.ok((/; *path=\/(?:;|$)/i).test(data));
 
             request(server)
               .post('/')
@@ -320,7 +320,7 @@ describe('csurf', () => {
             const token = res.text;
 
             assert.ok(Boolean(data));
-            assert.ok(/; *path=\/(?:;|$)/i.test(data));
+            assert.ok((/; *path=\/(?:;|$)/i).test(data));
 
             request(server)
               .post('/')
@@ -344,7 +344,7 @@ describe('csurf', () => {
             const token = res.text;
 
             assert.ok(Boolean(data));
-            assert.ok(/; *path=\/(?:;|$)/i.test(data));
+            assert.ok((/; *path=\/(?:;|$)/i).test(data));
 
             request(server)
               .post('/')
@@ -369,7 +369,7 @@ describe('csurf', () => {
               const token = res.text;
 
               assert.ok(Boolean(data));
-              assert.ok(/^_csrf=s%3A/i.test(data));
+              assert.ok((/^_csrf=s%3A/i).test(data));
 
               request(server)
                 .post('/')

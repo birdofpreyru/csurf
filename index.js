@@ -56,10 +56,10 @@ function getCookieOptions(options) {
 function defaultValue(req) {
   // eslint-disable-next-line no-underscore-dangle
   return (req.body && req.body._csrf) || (req.query && req.query._csrf)
-    || (req.headers['csrf-token'])
-    || (req.headers['xsrf-token'])
-    || (req.headers['x-csrf-token'])
-    || (req.headers['x-xsrf-token']);
+    || req.headers['csrf-token']
+    || req.headers['xsrf-token']
+    || req.headers['x-csrf-token']
+    || req.headers['x-xsrf-token'];
 }
 
 /**
@@ -222,7 +222,7 @@ function csurf(options) {
   // generate lookup
   const ignoreMethod = getIgnoredMethods(ignoreMethods);
 
-  return function csrf(req, res, next) {
+  return (req, res, next) => {
     // validate the configuration against request
     if (!verifyConfiguration(req, sessionKey, cookie)) {
       return next(new Error('misconfigured csrf'));
@@ -233,10 +233,8 @@ function csurf(options) {
     let token;
 
     // lazy-load token getter
-    req.csrfToken = function csrfToken() {
-      let sec = !cookie
-        ? getSecret(req, sessionKey, cookie)
-        : secret;
+    req.csrfToken = () => {
+      let sec = cookie ? secret : getSecret(req, sessionKey, cookie);
 
       // use cached token if secret has not changed
       if (token && sec === secret) {
@@ -265,7 +263,7 @@ function csurf(options) {
     }
 
     // verify the incoming token
-    if (!ignoreMethod[req.method] && !tokens.verify(secret, value(req))) {
+    if (!ignoreMethod[req.method] && !Tokens.verify(secret, value(req))) {
       return next(createError(403, 'invalid csrf token', {
         code: 'EBADCSRFTOKEN',
       }));
