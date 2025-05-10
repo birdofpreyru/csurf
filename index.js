@@ -163,6 +163,7 @@ function setSecret(req, res, sessionKey, val, cookie) {
     setCookie(res, cookie.key, value, cookie);
   } else {
     // set secret on session
+    // eslint-disable-next-line no-param-reassign
     req[sessionKey].csrfSecret = val;
   }
 }
@@ -233,6 +234,7 @@ function csurf(options) {
     let token;
 
     // lazy-load token getter
+    // eslint-disable-next-line no-param-reassign
     req.csrfToken = () => {
       let sec = cookie ? secret : getSecret(req, sessionKey, cookie);
 

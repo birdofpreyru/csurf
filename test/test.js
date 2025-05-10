@@ -24,6 +24,7 @@ function createServer(opts) {
     const index = req.url.indexOf('?') + 1;
 
     if (index) {
+      // eslint-disable-next-line no-param-reassign
       req.query = querystring.parse(req.url.substring(index));
     }
 
@@ -216,6 +217,7 @@ describe('csurf', () => {
         next(err);
         return;
       }
+      // eslint-disable-next-line no-param-reassign
       res.statusCode = 403;
       res.end('session has expired or form tampered with');
     });
@@ -442,6 +444,7 @@ describe('csurf', () => {
       const sess = {};
 
       app.use((req, res, next) => {
+        // eslint-disable-next-line no-param-reassign
         req.mySession = sess;
         next();
       });
@@ -490,6 +493,7 @@ describe('csurf', () => {
       app.use(session({ keys: ['a', 'b'] }));
       app.use(csurf());
       app.use((req, res) => {
+        // eslint-disable-next-line no-param-reassign
         req.session = null;
         res.setHeader('x-run', 'true');
         res.end(req.csrfToken());
@@ -510,11 +514,13 @@ describe('csurf', () => {
       app.use(csurf());
       app.use('/break', (req, res, next) => {
         // break session
+        // eslint-disable-next-line no-param-reassign
         req.session = null;
         next();
       });
       app.use('/new', (req, res, next) => {
         // regenerate session
+        // eslint-disable-next-line no-param-reassign
         req.session = { hit: 1 };
         next();
       });
