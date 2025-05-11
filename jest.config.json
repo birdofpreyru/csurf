@@ -1,0 +1,13 @@
+{
+  "collectCoverage": true,
+  "collectCoverageFrom": ["src/**/*.{js,jsx,ts,tsx}"],
+  "coverageDirectory": "__coverage__",
+  "testPathIgnorePatterns": [
+    "/__assets__/",
+    "/__tests__/ts-types/",
+    "/node_modules/"
+  ],
+  "transform": {
+    "\\.(j|t)sx?$": "babel-jest"
+  }
+}

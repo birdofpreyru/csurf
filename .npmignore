@@ -1,4 +1,6 @@
 .*
-coverage/
+__coverage__/
+__test__/
+config/
 dr.pogodin-csurf-*.tgz
-test/
+src/
