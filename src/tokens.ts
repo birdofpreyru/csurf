@@ -100,11 +100,21 @@ export default class Tokens {
     return privateTokenize(secret, rndm(this.saltLength));
   }
 
+  secret(): Promise<string>;
+  secret(callback: (err: unknown, str: string) => void): void;
+
   /**
    * Create a new secret key.
    */
-  secret(callback: (err: unknown, str: string) => void): void {
-    uid(this.secretLength, callback);
+  secret(
+    callback?: (err: unknown, str: string) => void,
+  ): Promise<string> | undefined {
+    if (callback) {
+      uid(this.secretLength, callback);
+      return undefined;
+    }
+
+    return uid(this.secretLength);
   }
 
   /**

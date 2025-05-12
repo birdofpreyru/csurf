@@ -17,7 +17,7 @@ type CookieOptions = {
   signed?: boolean;
 };
 
-type Options = TokensOptions & {
+export type Options = TokensOptions & {
   cookie?: true | CookieOptions;
   ignoreMethods?: string[];
   sessionKey?: string;

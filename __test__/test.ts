@@ -1,33 +1,29 @@
 import assert from 'assert';
-import connect from 'connect';
-import http from 'http';
+
+import express, {
+  type Express,
+  type NextFunction,
+  type Request,
+  type Response,
+} from 'express';
+
+import { createServer as createHttpServer } from 'http';
 import session from 'cookie-session';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import querystring from 'querystring';
-import request from 'supertest';
+import request, { type Response as SuperResponse } from 'supertest';
 
-import csurf from '../src';
+import csurf, { type Options } from '../src';
 
-function createServer(opts) {
-  const app = connect();
+function createServer(opts?: Options) {
+  const app = express();
 
-  if (!opts || (opts && !opts.cookie)) {
-    app.use(session({ keys: ['a', 'b'] }));
-  } else if (opts && opts.cookie) {
-    app.use(cookieParser('keyboard cat'));
+  if (!opts || !opts.cookie) {
+    app.use(session({ keys: ['a', 'b'] }) as () => void);
+  } else {
+    app.use(cookieParser('keyboard cat') as () => void);
   }
 
-  app.use((req, res, next) => {
-    const index = req.url.indexOf('?') + 1;
-
-    if (index) {
-      // eslint-disable-next-line no-param-reassign
-      req.query = querystring.parse(req.url.substring(index));
-    }
-
-    next();
-  });
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(csurf(opts));
 
@@ -35,15 +31,19 @@ function createServer(opts) {
     res.end(req.csrfToken() || 'none');
   });
 
-  return http.createServer(app);
+  // TODO: What is the best way to avoid type mismatch here?
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  return createHttpServer(app);
 }
 
-function cookie(res, name) {
-  return res.headers['set-cookie'].filter((items) => items.split('=')[0] === name)[0];
+function cookie(res: SuperResponse, name: string): string {
+  return (res.get('set-cookie') as string[] | undefined)!
+    .find((items) => items.split('=')[0] === name)!;
 }
 
-function cookies(res) {
-  return res.headers['set-cookie'].map((items) => items.split(';')[0]).join(';');
+function cookies(res: SuperResponse) {
+  return (res.get('set-cookie') as string[] | undefined)!
+    .map((items) => items.split(';')[0]).join(';');
 }
 
 describe('csurf', () => {
@@ -53,7 +53,7 @@ describe('csurf', () => {
 
     request(server)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: unknown, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -219,7 +219,7 @@ describe('csurf', () => {
 
   // eslint-disable-next-line jest/no-done-callback
   it('should provide error code on invalid token error', (done) => {
-    const app = connect();
+    const app = express();
     app.use(session({ keys: ['a', 'b'] }));
     app.use(csurf());
 
@@ -228,16 +228,23 @@ describe('csurf', () => {
       res.end(req.csrfToken() || 'none');
     });
 
-    app.use((err, req, res, next) => {
-      // eslint-disable-next-line jest/no-conditional-in-test
-      if (err.code !== 'EBADCSRFTOKEN') {
-        next(err);
-        return;
-      }
-      // eslint-disable-next-line no-param-reassign
-      res.statusCode = 403;
-      res.end('session has expired or form tampered with');
-    });
+    app.use(
+      (
+        err: { code?: string },
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
+        if (err.code !== 'EBADCSRFTOKEN') {
+          next(err);
+          return;
+        }
+        // eslint-disable-next-line no-param-reassign
+        res.statusCode = 403;
+        res.end('session has expired or form tampered with');
+      },
+    );
 
     request(app)
       .get('/')
@@ -250,14 +257,14 @@ describe('csurf', () => {
         request(app)
           .post('/')
           .set('Cookie', cookies(res))
-          .set('X-CSRF-Token', String(`${res.text}p`))
+          .set('X-CSRF-Token', `${res.text}p`)
           .expect(403, 'session has expired or form tampered with', done);
       });
   });
 
   // eslint-disable-next-line jest/no-done-callback
   it('should error without session secret storage', (done) => {
-    const app = connect();
+    const app = express();
 
     app.use(csurf());
 
@@ -296,7 +303,7 @@ describe('csurf', () => {
 
       // eslint-disable-next-line jest/no-done-callback
       it('should append cookie to existing Set-Cookie header', (done) => {
-        const app = connect();
+        const app = express();
 
         app.use(cookieParser('keyboard cat'));
         app.use((req, res, next) => {
@@ -334,6 +341,7 @@ describe('csurf', () => {
     describe('when an object', () => {
       // eslint-disable-next-line jest/no-done-callback
       it('should configure the cookie name with "key"', (done) => {
+        // @ts-expect-error "error for test purposes"
         const server = createServer({ cookie: { key: '_customcsrf' } });
 
         request(server)
@@ -360,6 +368,7 @@ describe('csurf', () => {
 
       // eslint-disable-next-line jest/no-done-callback
       it('should keep default cookie name when "key: undefined"', (done) => {
+        // @ts-expect-error "error for test purposes"
         const server = createServer({ cookie: { key: undefined } });
 
         request(server)
@@ -387,6 +396,7 @@ describe('csurf', () => {
       describe('when "signed": true', () => {
         // eslint-disable-next-line jest/no-done-callback
         it('should enable signing', (done) => {
+          // @ts-expect-error "error for test purposes"
           const server = createServer({ cookie: { signed: true } });
 
           request(server)
@@ -413,8 +423,9 @@ describe('csurf', () => {
 
         // eslint-disable-next-line jest/no-done-callback
         it('should error without cookieParser', (done) => {
-          const app = connect();
+          const app = express();
 
+          // @ts-expect-error "error for test purposes"
           app.use(csurf({ cookie: { signed: true } }));
 
           request(app)
@@ -424,9 +435,10 @@ describe('csurf', () => {
 
         // eslint-disable-next-line jest/no-done-callback
         it('should error when cookieParser is missing secret', (done) => {
-          const app = connect();
+          const app = express();
 
           app.use(cookieParser());
+          // @ts-expect-error "error for test purposes"
           app.use(csurf({ cookie: { signed: true } }));
 
           request(app)
@@ -439,6 +451,7 @@ describe('csurf', () => {
 
   describe('with "ignoreMethods" option', () => {
     it('should reject invalid value', () => {
+      // @ts-expect-error "error for test purposes"
       assert.throws(createServer.bind(null, { ignoreMethods: 'tj' }), /option ignoreMethods/);
     });
 
@@ -476,12 +489,12 @@ describe('csurf', () => {
   describe('with "sessionKey" option', () => {
     // eslint-disable-next-line jest/no-done-callback
     it('should use the specified sessionKey', (done) => {
-      const app = connect();
+      const app = express();
       const sess = {};
 
       app.use((req, res, next) => {
-        // eslint-disable-next-line no-param-reassign
-        req.mySession = sess;
+        // @ts-expect-error "error for test purposes"
+        req.mySession = sess; // eslint-disable-line no-param-reassign
         next();
       });
       app.use(bodyParser.urlencoded({ extended: false }));
@@ -512,7 +525,7 @@ describe('csurf', () => {
   describe('req.csrfToken()', () => {
     // eslint-disable-next-line jest/no-done-callback
     it('should return same token for each call', (done) => {
-      const app = connect();
+      const app = express();
       app.use(session({ keys: ['a', 'b'] }));
       app.use(csurf());
       app.use((req, res) => {
@@ -528,7 +541,7 @@ describe('csurf', () => {
 
     // eslint-disable-next-line jest/no-done-callback
     it('should error when secret storage missing', (done) => {
-      const app = connect();
+      const app = express();
 
       app.use(session({ keys: ['a', 'b'] }));
       app.use(csurf());
@@ -547,10 +560,10 @@ describe('csurf', () => {
   });
 
   describe('when using session storage', () => {
-    let app;
+    let app: Express;
 
     beforeAll(() => {
-      app = connect();
+      app = express();
       app.use(session({ keys: ['a', 'b'] }));
       app.use(csurf());
       app.use('/break', (req, res, next) => {
