@@ -1,7 +1,7 @@
 {
   "name": "@dr.pogodin/csurf",
   "description": "CSRF token middleware for ExpressJS",
-  "version": "1.16.1",
+  "version": "1.16.2",
   "license": "MIT",
   "repository": "github:birdofpreyru/csurf",
   "bugs": {
@@ -11,7 +11,7 @@
   "main": "./build/mjs/index.js",
   "types": "./build/types/index.d.ts",
   "exports": {
-    "require": "./build/cjs/index.js",
+    "require": "./cjs.js",
     "default": "./build/mjs/index.js"
   },
   "dependencies": {
@@ -47,7 +47,7 @@
     "express": "^5.1.0",
     "jest": "^29.7.0",
     "rimraf": "^6.0.1",
-    "supertest": "^7.1.0",
+    "supertest": "^7.1.1",
     "typescript": "^5.8.3"
   },
   "engines": {

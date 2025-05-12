@@ -83,7 +83,7 @@ $ npm install --save @dr.pogodin/csurf
 <!-- eslint-disable no-unused-vars -->
 
 ```js
-var csurf = require('@dr.pogodin/csurf')
+import csurf from '@dr.pogodin/csurf';
 ```
 
 ### csurf([options])
@@ -171,17 +171,17 @@ The following is an example of some server-side code that generates a form
 that requires a CSRF token to post back.
 
 ```js
-var cookieParser = require('cookie-parser')
-var csrf = require('@dr.pogodin/csurf')
-var bodyParser = require('body-parser')
-var express = require('express')
+import cookieParser from 'cookie-parser';
+import csrf from '@dr.pogodin/csurf';
+import bodyParser from 'body-parser';
+import express from 'express';
 
 // setup route middlewares
-var csrfProtection = csrf({ cookie: true })
-var parseForm = bodyParser.urlencoded({ extended: false })
+const csrfProtection = csrf({ cookie: true })
+const parseForm = bodyParser.urlencoded({ extended: false })
 
 // create express app
-var app = express()
+const app = express()
 
 // parse cookies
 // we need this because "cookie" is true in csrfProtection
@@ -286,16 +286,16 @@ The following is an example of how to order your routes so that certain endpoint
 do not check for a valid CSRF token.
 
 ```js
-var cookieParser = require('cookie-parser')
-var csrf = require('@dr.pogodin/csurf')
-var bodyParser = require('body-parser')
-var express = require('express')
+import cookieParser from 'cookie-parser';
+import csrf from '@dr.pogodin/csurf';
+import bodyParser from 'body-parser';
+import express from 'express';
 
 // create express app
-var app = express()
+const app = express()
 
 // create api router
-var api = createApiRouter()
+const api = createApiRouter()
 
 // mount api before csrf is appended to the app stack
 app.use('/api', api)
@@ -315,7 +315,7 @@ app.post('/process', function (req, res) {
 })
 
 function createApiRouter () {
-  var router = new express.Router()
+  const router = new express.Router()
 
   router.post('/getProfile', function (req, res) {
     res.send('no csrf to get here')
@@ -332,12 +332,12 @@ When the CSRF token validation fails, an error is thrown that has
 error messages.
 
 ```js
-var bodyParser = require('body-parser')
-var cookieParser = require('cookie-parser')
-var csrf = require('@dr.pogodin/csurf')
-var express = require('express')
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import csrf from '@dr.pogodin/csurf';
+import express from 'express';
 
-var app = express()
+const app = express()
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(csrf({ cookie: true }))
