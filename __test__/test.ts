@@ -1,34 +1,29 @@
-process.env.NODE_ENV = 'test';
+import assert from 'assert';
 
-const assert = require('assert');
-const connect = require('connect');
-const http = require('http');
-const session = require('cookie-session');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const querystring = require('querystring');
-const request = require('supertest');
+import express, {
+  type Express,
+  type NextFunction,
+  type Request,
+  type Response,
+} from 'express';
 
-const csurf = require('..');
+import { createServer as createHttpServer } from 'http';
+import session from 'cookie-session';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import request, { type Response as SuperResponse } from 'supertest';
 
-function createServer(opts) {
-  const app = connect();
+import csurf, { type Options } from '../src';
 
-  if (!opts || (opts && !opts.cookie)) {
-    app.use(session({ keys: ['a', 'b'] }));
-  } else if (opts && opts.cookie) {
-    app.use(cookieParser('keyboard cat'));
+function createServer(opts?: Options) {
+  const app = express();
+
+  if (!opts || !opts.cookie) {
+    app.use(session({ keys: ['a', 'b'] }) as () => void);
+  } else {
+    app.use(cookieParser('keyboard cat') as () => void);
   }
 
-  app.use((req, res, next) => {
-    const index = req.url.indexOf('?') + 1;
-
-    if (index) {
-      req.query = querystring.parse(req.url.substring(index));
-    }
-
-    next();
-  });
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(csurf(opts));
 
@@ -36,24 +31,30 @@ function createServer(opts) {
     res.end(req.csrfToken() || 'none');
   });
 
-  return http.createServer(app);
+  // TODO: What is the best way to avoid type mismatch here?
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  return createHttpServer(app);
 }
 
-function cookie(res, name) {
-  return res.headers['set-cookie'].filter((items) => items.split('=')[0] === name)[0];
+function cookie(res: SuperResponse, name: string): string {
+  return (res.get('set-cookie') as string[] | undefined)!
+    .find((items) => items.split('=')[0] === name)!;
 }
 
-function cookies(res) {
-  return res.headers['set-cookie'].map((items) => items.split(';')[0]).join(';');
+function cookies(res: SuperResponse) {
+  return (res.get('set-cookie') as string[] | undefined)!
+    .map((items) => items.split(';')[0]).join(';');
 }
 
 describe('csurf', () => {
+  // eslint-disable-next-line jest/no-done-callback
   it('should work in req.body', (done) => {
     const server = createServer();
 
     request(server)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: unknown, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
           return;
@@ -68,12 +69,14 @@ describe('csurf', () => {
       });
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   it('should work in req.query', (done) => {
     const server = createServer();
 
     request(server)
       .get('/')
       .expect(200, (err, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
           return;
@@ -87,12 +90,14 @@ describe('csurf', () => {
       });
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   it('should work in csrf-token header', (done) => {
     const server = createServer();
 
     request(server)
       .get('/')
       .expect(200, (err, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
           return;
@@ -107,12 +112,14 @@ describe('csurf', () => {
       });
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   it('should work in xsrf-token header', (done) => {
     const server = createServer();
 
     request(server)
       .get('/')
       .expect(200, (err, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
           return;
@@ -127,12 +134,14 @@ describe('csurf', () => {
       });
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   it('should work in x-csrf-token header', (done) => {
     const server = createServer();
 
     request(server)
       .get('/')
       .expect(200, (err, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
           return;
@@ -147,12 +156,14 @@ describe('csurf', () => {
       });
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   it('should work in x-xsrf-token header', (done) => {
     const server = createServer();
 
     request(server)
       .get('/')
       .expect(200, (err, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
           return;
@@ -167,12 +178,14 @@ describe('csurf', () => {
       });
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   it('should fail with an invalid token', (done) => {
     const server = createServer();
 
     request(server)
       .get('/')
       .expect(200, (err, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
           return;
@@ -185,12 +198,14 @@ describe('csurf', () => {
       });
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   it('should fail with no token', (done) => {
     const server = createServer();
 
     request(server)
       .get('/')
       .expect(200, (err, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
           return;
@@ -202,27 +217,39 @@ describe('csurf', () => {
       });
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   it('should provide error code on invalid token error', (done) => {
-    const app = connect();
+    const app = express();
     app.use(session({ keys: ['a', 'b'] }));
     app.use(csurf());
 
     app.use((req, res) => {
+      // eslint-disable-next-line jest/no-conditional-in-test
       res.end(req.csrfToken() || 'none');
     });
 
-    app.use((err, req, res, next) => {
-      if (err.code !== 'EBADCSRFTOKEN') {
-        next(err);
-        return;
-      }
-      res.statusCode = 403;
-      res.end('session has expired or form tampered with');
-    });
+    app.use(
+      (
+        err: { code?: string },
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
+        if (err.code !== 'EBADCSRFTOKEN') {
+          next(err);
+          return;
+        }
+        // eslint-disable-next-line no-param-reassign
+        res.statusCode = 403;
+        res.end('session has expired or form tampered with');
+      },
+    );
 
     request(app)
       .get('/')
       .expect(200, (err, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
           return;
@@ -230,13 +257,14 @@ describe('csurf', () => {
         request(app)
           .post('/')
           .set('Cookie', cookies(res))
-          .set('X-CSRF-Token', String(`${res.text}p`))
+          .set('X-CSRF-Token', `${res.text}p`)
           .expect(403, 'session has expired or form tampered with', done);
       });
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   it('should error without session secret storage', (done) => {
-    const app = connect();
+    const app = express();
 
     app.use(csurf());
 
@@ -247,12 +275,14 @@ describe('csurf', () => {
 
   describe('with "cookie" option', () => {
     describe('when true', () => {
+      // eslint-disable-next-line jest/no-done-callback
       it('should store secret in "_csrf" cookie', (done) => {
         const server = createServer({ cookie: true });
 
         request(server)
           .get('/')
           .expect(200, (err, res) => {
+            // eslint-disable-next-line jest/no-conditional-in-test
             if (err) {
               done(err);
               return;
@@ -271,8 +301,9 @@ describe('csurf', () => {
           });
       });
 
+      // eslint-disable-next-line jest/no-done-callback
       it('should append cookie to existing Set-Cookie header', (done) => {
-        const app = connect();
+        const app = express();
 
         app.use(cookieParser('keyboard cat'));
         app.use((req, res, next) => {
@@ -281,12 +312,14 @@ describe('csurf', () => {
         });
         app.use(csurf({ cookie: true }));
         app.use((req, res) => {
+          // eslint-disable-next-line jest/no-conditional-in-test
           res.end(req.csrfToken() || 'none');
         });
 
         request(app)
           .get('/')
           .expect(200, (err, res) => {
+            // eslint-disable-next-line jest/no-conditional-in-test
             if (err) {
               done(err);
               return;
@@ -306,12 +339,15 @@ describe('csurf', () => {
     });
 
     describe('when an object', () => {
+      // eslint-disable-next-line jest/no-done-callback
       it('should configure the cookie name with "key"', (done) => {
+        // @ts-expect-error "error for test purposes"
         const server = createServer({ cookie: { key: '_customcsrf' } });
 
         request(server)
           .get('/')
           .expect(200, (err, res) => {
+            // eslint-disable-next-line jest/no-conditional-in-test
             if (err) {
               done(err);
               return;
@@ -330,12 +366,15 @@ describe('csurf', () => {
           });
       });
 
+      // eslint-disable-next-line jest/no-done-callback
       it('should keep default cookie name when "key: undefined"', (done) => {
+        // @ts-expect-error "error for test purposes"
         const server = createServer({ cookie: { key: undefined } });
 
         request(server)
           .get('/')
           .expect(200, (err, res) => {
+            // eslint-disable-next-line jest/no-conditional-in-test
             if (err) {
               done(err);
               return;
@@ -355,12 +394,15 @@ describe('csurf', () => {
       });
 
       describe('when "signed": true', () => {
+        // eslint-disable-next-line jest/no-done-callback
         it('should enable signing', (done) => {
+          // @ts-expect-error "error for test purposes"
           const server = createServer({ cookie: { signed: true } });
 
           request(server)
             .get('/')
             .expect(200, (err, res) => {
+              // eslint-disable-next-line jest/no-conditional-in-test
               if (err) {
                 done(err);
                 return;
@@ -379,9 +421,11 @@ describe('csurf', () => {
             });
         });
 
+        // eslint-disable-next-line jest/no-done-callback
         it('should error without cookieParser', (done) => {
-          const app = connect();
+          const app = express();
 
+          // @ts-expect-error "error for test purposes"
           app.use(csurf({ cookie: { signed: true } }));
 
           request(app)
@@ -389,10 +433,12 @@ describe('csurf', () => {
             .expect(500, /misconfigured csrf/, done);
         });
 
+        // eslint-disable-next-line jest/no-done-callback
         it('should error when cookieParser is missing secret', (done) => {
-          const app = connect();
+          const app = express();
 
           app.use(cookieParser());
+          // @ts-expect-error "error for test purposes"
           app.use(csurf({ cookie: { signed: true } }));
 
           request(app)
@@ -405,15 +451,18 @@ describe('csurf', () => {
 
   describe('with "ignoreMethods" option', () => {
     it('should reject invalid value', () => {
+      // @ts-expect-error "error for test purposes"
       assert.throws(createServer.bind(null, { ignoreMethods: 'tj' }), /option ignoreMethods/);
     });
 
+    // eslint-disable-next-line jest/no-done-callback
     it('should not check token on given methods', (done) => {
       const server = createServer({ ignoreMethods: ['GET', 'POST'] });
 
       request(server)
         .get('/')
         .expect(200, (err, res) => {
+          // eslint-disable-next-line jest/no-conditional-in-test
           if (err) {
             done(err);
             return;
@@ -423,6 +472,7 @@ describe('csurf', () => {
             .post('/')
             .set('Cookie', cookie2)
             .expect(200, (err2) => {
+              // eslint-disable-next-line jest/no-conditional-in-test
               if (err2) {
                 done(err2);
                 return;
@@ -437,23 +487,27 @@ describe('csurf', () => {
   });
 
   describe('with "sessionKey" option', () => {
+    // eslint-disable-next-line jest/no-done-callback
     it('should use the specified sessionKey', (done) => {
-      const app = connect();
+      const app = express();
       const sess = {};
 
       app.use((req, res, next) => {
-        req.mySession = sess;
+        // @ts-expect-error "error for test purposes"
+        req.mySession = sess; // eslint-disable-line no-param-reassign
         next();
       });
       app.use(bodyParser.urlencoded({ extended: false }));
       app.use(csurf({ sessionKey: 'mySession' }));
       app.use((req, res) => {
+        // eslint-disable-next-line jest/no-conditional-in-test
         res.end(req.csrfToken() || 'none');
       });
 
       request(app)
         .get('/')
         .expect(200, (err, res) => {
+          // eslint-disable-next-line jest/no-conditional-in-test
           if (err) {
             done(err);
             return;
@@ -469,8 +523,9 @@ describe('csurf', () => {
   });
 
   describe('req.csrfToken()', () => {
+    // eslint-disable-next-line jest/no-done-callback
     it('should return same token for each call', (done) => {
-      const app = connect();
+      const app = express();
       app.use(session({ keys: ['a', 'b'] }));
       app.use(csurf());
       app.use((req, res) => {
@@ -484,12 +539,14 @@ describe('csurf', () => {
         .expect(200, 'true', done);
     });
 
+    // eslint-disable-next-line jest/no-done-callback
     it('should error when secret storage missing', (done) => {
-      const app = connect();
+      const app = express();
 
       app.use(session({ keys: ['a', 'b'] }));
       app.use(csurf());
       app.use((req, res) => {
+        // eslint-disable-next-line no-param-reassign
         req.session = null;
         res.setHeader('x-run', 'true');
         res.end(req.csrfToken());
@@ -503,18 +560,21 @@ describe('csurf', () => {
   });
 
   describe('when using session storage', () => {
-    let app;
-    before(() => {
-      app = connect();
+    let app: Express;
+
+    beforeAll(() => {
+      app = express();
       app.use(session({ keys: ['a', 'b'] }));
       app.use(csurf());
       app.use('/break', (req, res, next) => {
         // break session
+        // eslint-disable-next-line no-param-reassign
         req.session = null;
         next();
       });
       app.use('/new', (req, res, next) => {
         // regenerate session
+        // eslint-disable-next-line no-param-reassign
         req.session = { hit: 1 };
         next();
       });
@@ -523,10 +583,12 @@ describe('csurf', () => {
       });
     });
 
+    // eslint-disable-next-line jest/no-done-callback
     it('should work with a valid token', (done) => {
       request(app)
         .get('/')
         .expect(200, (err, res) => {
+          // eslint-disable-next-line jest/no-conditional-in-test
           if (err) {
             done(err);
             return;
@@ -540,10 +602,12 @@ describe('csurf', () => {
         });
     });
 
+    // eslint-disable-next-line jest/no-done-callback
     it('should provide a valid token when session regenerated', (done) => {
       request(app)
         .get('/new')
         .expect(200, (err, res) => {
+          // eslint-disable-next-line jest/no-conditional-in-test
           if (err) {
             done(err);
             return;
@@ -557,6 +621,7 @@ describe('csurf', () => {
         });
     });
 
+    // eslint-disable-next-line jest/no-done-callback
     it('should error if session missing', (done) => {
       request(app)
         .get('/break')

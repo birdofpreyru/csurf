@@ -1,18 +1,16 @@
-const rndm = require('rndm');
-const uid = require('uid-safe');
-const compare = require('tsscmp');
-const crypto = require('crypto');
+import rndm from 'rndm';
+import uid from 'uid-safe';
+import compare from 'tsscmp';
+import crypto from 'crypto';
 
 const EQUAL_GLOBAL_REGEXP = /=/g;
 const PLUS_GLOBAL_REGEXP = /\+/g;
 const SLASH_GLOBAL_REGEXP = /\//g;
 
 /**
- * Hash a string with SHA256, returning url-safe base64
- * @param {string} str
- * @private
+ * Hash a string with SHA256, returning url-safe base64.
  */
-function hash(str) {
+function hash(str: string): string {
   return crypto
     .createHash('sha256')
     .update(str, 'ascii')
@@ -25,17 +23,14 @@ function hash(str) {
 /**
  * Tokenize a secret and salt.
  */
-function privateTokenize(secret, salt) {
+function privateTokenize(secret: string, salt: string): string {
   return `${salt}-${hash(`${salt}-${secret}`)}`;
 }
 
 /**
  * Verify if a given token is valid for a given secret.
- *
- * @param {string} secret
- * @param {string} token
  */
-function verify(secret, token) {
+export function verify(secret: string, token: string): boolean {
   if (!secret || typeof secret !== 'string') {
     return false;
   }
@@ -56,17 +51,25 @@ function verify(secret, token) {
   return compare(token, expected);
 }
 
+export type Options = {
+  saltLength?: number;
+  secretLength?: number;
+};
+
 /**
  * Token generation/verification class.
  */
-class Tokens {
+export default class Tokens {
+  private saltLength: number;
+  private secretLength: number;
+
   /**
-   * @param {object} [options]
-   * @param {number} [options.saltLength=8] The string length of the salt
-   * @param {number} [options.secretLength=18] The byte length of the secret key
+   * @param [options]
+   * @param [options.saltLength=8] The string length of the salt
+   * @param [options.secretLength=18] The byte length of the secret key
    */
-  constructor(options) {
-    const opts = options || {};
+  constructor(options?: Options) {
+    const opts = options ?? {};
 
     const saltLength = opts.saltLength ?? 8;
 
@@ -87,9 +90,9 @@ class Tokens {
   /**
    * Create a new CSRF token.
    *
-   * @param {string} secret The secret for the token.
+   * @param secret The secret for the token.
    */
-  create(secret) {
+  create(secret: string): string {
     if (!secret || typeof secret !== 'string') {
       throw new TypeError('argument secret is required');
     }
@@ -97,26 +100,27 @@ class Tokens {
     return privateTokenize(secret, rndm(this.saltLength));
   }
 
+  secret(): Promise<string>;
+  secret(callback: (err: unknown, str: string) => void): void;
+
   /**
    * Create a new secret key.
-   *
-   * @param {function} [callback]
    */
-  secret(callback) {
-    return uid(this.secretLength, callback);
+  secret(
+    callback?: (err: unknown, str: string) => void,
+  ): Promise<string> | undefined {
+    if (callback) {
+      uid(this.secretLength, callback);
+      return undefined;
+    }
+
+    return uid(this.secretLength);
   }
 
   /**
    * Create a new secret key synchronously.
    */
-  secretSync() {
+  secretSync(): string {
     return uid.sync(this.secretLength);
   }
 }
-
-/**
- * Module exports.
- */
-module.exports = Tokens;
-
-module.exports.verify = verify;

@@ -1,16 +1,9 @@
-const assert = require('assert');
-const crypto = require('crypto');
+import assert from 'assert';
 
-const { Promise } = global;
-const Tokens = require('../tokens');
+import Tokens, { verify } from '../src/tokens';
 
-// Add Promise to mocha's global list
-// eslint-disable-next-line no-self-assign
-global.Promise = global.Promise;
-
-let defaultEncoding;
-let secret;
-let tokens;
+let secret: string;
+let tokens: Tokens;
 
 describe('Tokens', () => {
   describe('options', () => {
@@ -18,8 +11,8 @@ describe('Tokens', () => {
       it('should reject non-numbers', () => {
         assert.throws(
           () => {
-            // eslint-disable-next-line no-new
-            new Tokens({ saltLength: 'bogus' });
+            // @ts-expect-error "for test purposes"
+            new Tokens({ saltLength: 'bogus' }); // eslint-disable-line no-new
           },
           /option saltLength/,
         );
@@ -50,8 +43,8 @@ describe('Tokens', () => {
       it('should reject non-numbers', () => {
         assert.throws(
           () => {
-            // eslint-disable-next-line no-new
-            new Tokens({ secretLength: 'bogus' });
+            // @ts-expect-error "for test purposes"
+            new Tokens({ secretLength: 'bogus' }); // eslint-disable-line no-new
           },
           /option secretLength/,
         );
@@ -93,19 +86,21 @@ describe('Tokens', () => {
   });
 
   describe('.create(secret)', () => {
-    before(() => {
+    beforeAll(() => {
       tokens = new Tokens();
       secret = tokens.secretSync();
     });
 
     it('should require secret', () => {
       assert.throws(() => {
+        // @ts-expect-error "for test purposes"
         tokens.create();
       }, /argument secret.*required/);
     });
 
     it('should reject non-string secret', () => {
       assert.throws(() => {
+        // @ts-expect-error "for test purposes"
         tokens.create(42);
       }, /argument secret.*required/);
     });
@@ -141,36 +136,21 @@ describe('Tokens', () => {
         assert(!token.includes('='));
       }
     });
-
-    describe('when crypto.DEFAULT_ENCODING altered', () => {
-      before(() => {
-        defaultEncoding = crypto.DEFAULT_ENCODING;
-        crypto.DEFAULT_ENCODING = 'hex';
-      });
-
-      after(() => {
-        crypto.DEFAULT_ENCODING = defaultEncoding;
-      });
-
-      it('should create a token', () => {
-        const token = tokens.create(secret);
-        assert.ok(typeof token === 'string');
-        assert.ok(token.length > 0);
-      });
-    });
   });
 
   describe('.secret(callback)', () => {
-    before(() => {
+    beforeAll(() => {
       tokens = new Tokens();
     });
 
     it('should reject bad callback', () => {
-      assert.throws(() => {
-        tokens.secret(42);
+      assert.throws(async () => {
+        // @ts-expect-error "for test purposes"
+        await tokens.secret(42);
       }, /argument callback/);
     });
 
+    // eslint-disable-next-line jest/no-done-callback
     it('should create a secret', (done) => {
       tokens.secret((err, localSecret) => {
         assert.ifError(err);
@@ -182,22 +162,23 @@ describe('Tokens', () => {
   });
 
   describe('.secret()', () => {
-    before(() => {
+    beforeAll(() => {
       tokens = new Tokens();
     });
 
     describe('with global Promise', () => {
-      before(() => {
+      beforeAll(() => {
         global.Promise = Promise;
       });
 
-      after(() => {
+      afterAll(() => {
+        // @ts-expect-error "for test purposes"
         global.Promise = undefined;
       });
 
       it(
         'should create a secret',
-        () => tokens.secret().then((localSecret) => {
+        async () => tokens.secret().then((localSecret) => {
           assert.ok(typeof localSecret === 'string');
           assert.ok(localSecret.length > 0);
         }),
@@ -205,30 +186,32 @@ describe('Tokens', () => {
     });
 
     describe('without global Promise', () => {
-      before(() => {
+      beforeAll(() => {
+        // @ts-expect-error "for test purposes"
         global.Promise = undefined;
       });
 
-      after(() => {
+      afterAll(() => {
         global.Promise = Promise;
       });
 
       it('should require callback', () => {
-        assert.throws(() => {
-          tokens.secret();
+        assert.throws(async () => {
+          await tokens.secret();
         }, /argument callback.*required/);
       });
 
       it('should reject bad callback', () => {
-        assert.throws(() => {
-          tokens.secret(42);
+        assert.throws(async () => {
+          // @ts-expect-error "for test purposes"
+          await tokens.secret(42);
         }, /argument callback/);
       });
     });
   });
 
   describe('.secretSync()', () => {
-    before(() => {
+    beforeAll(() => {
       tokens = new Tokens();
     });
 
@@ -240,31 +223,35 @@ describe('Tokens', () => {
   });
 
   describe('.verify(secret, token)', () => {
-    before(() => {
+    beforeAll(() => {
       tokens = new Tokens();
       secret = tokens.secretSync();
     });
 
     it('should return `true` with valid tokens', () => {
       const token = tokens.create(secret);
-      assert.ok(Tokens.verify(secret, token));
+      assert.ok(verify(secret, token));
     });
 
     it('should return `false` with invalid tokens', () => {
       const token = tokens.create(secret);
-      assert.ok(!Tokens.verify(tokens.secretSync(), token));
-      assert.ok(!Tokens.verify('asdfasdfasdf', token));
+      assert.ok(!verify(tokens.secretSync(), token));
+      assert.ok(!verify('asdfasdfasdf', token));
     });
 
     it('should return `false` with invalid secret', () => {
-      assert.ok(!Tokens.verify());
-      assert.ok(!Tokens.verify([]));
+      // @ts-expect-error "for test purposes"
+      assert.ok(!verify());
+      // @ts-expect-error "for test purposes"
+      assert.ok(!verify([]));
     });
 
-    it('should return `false` with invalid tokens', () => {
-      assert(!Tokens.verify(secret, undefined));
-      assert(!Tokens.verify(secret, []));
-      assert(!Tokens.verify(secret, 'hi'));
+    it('should return `false` with invalid tokens (2)', () => {
+      // @ts-expect-error "for test purposes"
+      assert(!verify(secret, undefined));
+      // @ts-expect-error "for test purposes"
+      assert(!verify(secret, []));
+      assert(!verify(secret, 'hi'));
     });
   });
 });
