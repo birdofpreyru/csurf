@@ -5,6 +5,22 @@ import createError from 'http-errors';
 import { sign } from 'cookie-signature';
 import Tokens, { type Options as TokensOptions, verify } from './tokens';
 
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+    interface Request {
+      // The CSRF token generation routine, added by this library.
+      csrfToken: () => string;
+
+      // Cookie-signature secret, configured and set by "cookie-parser" middleware,
+      // if that is configured to support signed cookies:
+      // https://github.com/expressjs/cookie-parser
+      secret?: string;
+    }
+  }
+}
+
 // TODO: This should come from a cookie library.
 type CookieOptions = {
   domain?: string;
