@@ -1,6 +1,10 @@
 .*
 __coverage__/
 __test__/
+babel*.config.js
 config/
 dr.pogodin-csurf-*.tgz
+eslint.config.mjs
+jest.config.json
 src/
+tsconfig*.json
