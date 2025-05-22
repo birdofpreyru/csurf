@@ -20,6 +20,39 @@ Node.js [CSRF][wikipedia-csrf] protection middleware for [ExpressJS].
 ---
 _This is a fork of the original [csurf] package which was deprecated by its author with doubtful reasoning (in the nutshell the package was alright, but author did not want to maintain it anymore). It is published to NPM as [@dr.pogodin/csurf], its version **1.11.0** exactly matches the same, latest version of the original package, its versions starting from **1.12.0** have all dependencies updated to their latest versions, and misc maintenance performed as needed. To migrate from the original [csurf] just replace all references to it by [@dr.pogodin/csurf]._
 
+## Content
+- [CSRF Demystified]
+- [Installation]
+- [API]
+- [Examples]
+  - [Simple ExpressJS Example]
+    - [Using AJAX]
+    - [Single Page Application (SPA)]
+  - [Ignoring Routes]
+  - [Custom Error Handling]
+- [References]
+
+## CSRF Demystified
+[CSRF Demystified]: #csrf-demystified
+
+**Crux of [the problem][owasp-csrf]** &mdash; if browser knows an authentication
+cookie for your domain, it will send it along with all HTTP(S) requests to your
+domain,<sup>[&dagger;](#remark-01)</sup> even with those triggered automatically
+by completely unrelated websites, thus allowing malicious third parties to make
+authenticated requests to your API on behalf of the user.
+
+<sup id="remark-01">&dagger;</sup> It will be so if you have opted for
+[`SameSite=None`] for that cookie, or your user uses an outdated, or weird
+browser, as up until recently [`SameSite=None`] was the default cookie setting
+(_e.g._ [Chrome changed it `SameSite=Lax` in 2020](https://developers.google.com/search/blog/2020/01/get-ready-for-new-samesitenone-secure)).
+Naturally, people who select such defaults as [`SameSite=None`] have since moved
+to senior positions, and now make six numbers teaching you about security, while
+you fall into the pitfalls they created, not expecting that anybody sane would
+design such default behavior.
+
+[owasp-csrf]: https://owasp.org/www-community/attacks/csrf
+[`SameSite=None`]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#samesitesamesite-value
+
 ---
 ### Security Considerations
 [Double Submit Cookie]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie
@@ -69,6 +102,7 @@ If you have questions on how this module is implemented, please read
 [Understanding CSRF](https://github.com/pillarjs/understanding-csrf).
 
 ## Installation
+[Installation]: #installation
 
 This is a [Node.js](https://nodejs.org/en/) module available through the
 [npm registry](https://www.npmjs.com/). Installation is done using the
@@ -79,6 +113,7 @@ $ npm install --save @dr.pogodin/csurf
 ```
 
 ## API
+[API]: #api
 
 <!-- eslint-disable no-unused-vars -->
 
@@ -163,9 +198,11 @@ locations, in order:
   - `req.headers['x-csrf-token']` - the `X-CSRF-Token` HTTP request header.
   - `req.headers['x-xsrf-token']` - the `X-XSRF-Token` HTTP request header.
 
-## Example
+## Examples
+[Examples]: #examples
 
-### Simple express example
+### Simple ExpressJS Example
+[Simple ExpressJS Example]: #simple-expressjs-example
 
 The following is an example of some server-side code that generates a form
 that requires a CSRF token to post back.
@@ -211,6 +248,7 @@ input field named `_csrf`:
 ```
 
 #### Using AJAX
+[Using AJAX]: #using-ajax
 
 When accessing protected routes via ajax both the csrf token will need to be
 passed in the request. Typically this is done using a request header, as adding
@@ -253,6 +291,7 @@ fetch('/process', {
 ```
 
 #### Single Page Application (SPA)
+[Single Page Application (SPA)]: #single-page-application-spa
 
 Many SPA frameworks like Angular have CSRF support built in automatically.
 Typically they will reflect the value from a specific cookie, like
@@ -275,6 +314,7 @@ app.all('*', function (req, res) {
 ```
 
 ### Ignoring Routes
+[Ignoring Routes]: #ignoring-routes
 
 **Note** CSRF checks should only be disabled for requests that you expect to
 come from outside of your website. Do not disable CSRF checks for requests
@@ -325,7 +365,8 @@ function createApiRouter () {
 }
 ```
 
-### Custom error handling
+### Custom Error Handling
+[Custom Error Handling]: #custom-error-handling
 
 When the CSRF token validation fails, an error is thrown that has
 `err.code === 'EBADCSRFTOKEN'`. This can be used to display custom
@@ -353,19 +394,16 @@ app.use(function (err, req, res, next) {
 ```
 
 ## References
+[References]: #references
 
 - [Cross-side request forgery on Wikipedia][wikipedia-csrf]
-- [OWASP Cross-Site Request Forgery Prevention Cheat Sheet][owsap-csrf]
+- [OWASP Cross-Site Request Forgery Prevention Cheat Sheet][owsap-csrf-cheatsheet]
 
-[owsap-csrf]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+<!-- References -->
+
+[@dr.pogodin/csurf]: https://www.npmjs.com/package/@dr.pogodin/csurf
+[csurf]: https://www.npmjs.com/package/csurf
+[ExpressJS]: https://expressjs.com
+[owsap-csrf-cheatsheet]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
 [owsap-csrf-double-submit]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie
 [wikipedia-csrf]: https://en.wikipedia.org/wiki/Cross-site_request_forgery
-
-## License
-
-[MIT](LICENSE)
-
-<!-- Links -->
-[csurf]: https://www.npmjs.com/package/csurf
-[@dr.pogodin/csurf]: https://www.npmjs.com/package/@dr.pogodin/csurf
-[ExpressJS]: https://expressjs.com
