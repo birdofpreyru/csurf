@@ -21,40 +21,160 @@ Node.js [CSRF][wikipedia-csrf] protection middleware for [ExpressJS].
 _This is a fork of the original [csurf] package which was deprecated by its author with doubtful reasoning (in the nutshell the package was alright, but author did not want to maintain it anymore). It is published to NPM as [@dr.pogodin/csurf], its version **1.11.0** exactly matches the same, latest version of the original package, its versions starting from **1.12.0** have all dependencies updated to their latest versions, and misc maintenance performed as needed. To migrate from the original [csurf] just replace all references to it by [@dr.pogodin/csurf]._
 
 ---
-### Security Considerations
-[Double Submit Cookie]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie
-[XSS]: https://owasp.org/www-community/attacks/xss
 
-- **[Double Submit Cookie]** &mdash; This mode of CSRF protection relies on
-  the inability of code from a 3rd-party origin to read/write cookies stored,
-  and sent by browser for the protected origin. Sure, there are ways you may
-  ruin it, if you don't know what you are doing:
+## Content
+- [CSRF Demystified]
+- [Installation]
+- [API]
+- [Examples]
+  - [Simple ExpressJS Example]
+    - [Using AJAX]
+    - [Single Page Application (SPA)]
+  - [Ignoring Routes]
+  - [Custom Error Handling]
 
-  - Serving your website over unsecure HTTP connection &mdash;
-    a man in the middle might read your cookies (and everything else)
-    you send over, and exploit your negligence in all posible ways,
-    including but not limited to by-passing double submit cookie CSRF
-    protection.
-  - Allowing [XSS] injection &mdash; if 3rd party is able to inject arbitrary
-    code inside your own website, sure they can read the cookie and by-pass CSRF
-    protection.
-  - Allowing 3rd parties to control your sub-domains (a code running on
-    sub-domain may shadow CSRF cookie set by the protected domain, thus allowing
-    to by-pass CSRF protection).
-  - _etc._
+## CSRF Demystified
+[CSRF Demystified]: #csrf-demystified
 
-  This library has options allowing to mitigate these possibilities (by opting
-  for various security options for CSRF cookies, which will instruct the browser
-  to not pass CSRF cookie over insecure connections, _etc._), but, by default,
-  the library does not enforce these options.
+**Crux of [the problem][owasp-csrf]** &mdash; if browser knows an authentication
+cookie for your domain, it may send it along with all HTTP(S) requests to your
+backend,<sup>[&dagger;](#remark-01)</sup> even with those triggered automatically
+by completely unrelated websites; thus allowing a malicious third party to make
+authenticated requests to your API on behalf of the user, if he has loaded their
+page into his browser (_i.e._ a bad actor does not have to know those cookies,
+it may just rely on the user's browser sending them automatically, directly to
+your API).
 
-  [Some argue](https://github.com/birdofpreyru/csurf/issues/1) that not
-  enforcing these options by default is against security, and requires
-  deprecation of the library (like happened to its upstream original);
-  IMHO, enforcing these options just adds headache in more common scenarios,
-  and here is no security issue with the library, as long as it does exactly
-  what users asks it to do.
----
+<sup id="remark-01">&dagger;</sup> It happens if you have opted for this
+([`SameSite=None`] &mdash; bad idea), or your user uses an outdated, weird
+browser, as up until recently [`SameSite=None`] was the default cookie setting
+(_e.g._ [Chrome changed it to `SameSite=Lax` only in 2020](https://developers.google.com/search/blog/2020/01/get-ready-for-new-samesitenone-secure)).
+Naturally, people who selected such default behavior ([`SameSite=None`]) have
+since moved to senior positions, and now make six numbers teaching you about
+security, while you fall for the pitfalls they created (_i.e._ they selected
+that default with tracking applications of third-party cookies in mind, and
+they had not thought what does it mean for possible authentication applications
+of cookies).
+
+**[Three main ways to protect against CSRF][owsap-csrf-cheatsheet]**,
+implemented by this library, in the nutshell all verify that the initiator of
+HTTP(S) requests is a part (legit or not) of your website running in the user's
+browser, _i.e._ it is actually able to read (or write) your cookies (as browser
+only allows the frontend to access cookies from the same origin). Mind, speaking
+of HTTP(S) requests we actually assume that you only use HTTPS &mdash; if you
+are careless enough to permit unsecure HTTP connection to your backend,
+why would you care about CSRF at all?
+
+- [Synchronizer Token Pattern](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern)
+  approach consists of the server generating a random token for the current user
+  session, storing it at the server side, and also passing it to the frontend
+  along with the HTML page. To make an API request the frontend is expected
+  to read that token, and to pass it back to the server as a part of the request
+  payload, or in its header. The server compares the token value received with
+  the request to the value stored at the backend for that user session, and if
+  they match it proves that the request initiator is a part of the page, able
+  to read cookies set for that origin, or the actual HTML served for that user.
+  Sure, a malicious code injected inside your page ([XSS]) will be able to do
+  just the same, and thus to bypass your CSRF protection, however if you allow
+  such injectsion, with or without CSRF protection, you are fucked.
+
+  This mode of CSRF protection is provided by this library when no
+  [`cookie` option](#cookie) is set. It is also implemented somewhat smarter,
+  as instead of storing on the server side the actual tokens issued to the user,
+  it instead generates, and stores a random cryptographic secret for that user
+  session, and then uses it to generate random, signed tokens, and to later
+  verify these tokens when they are passed back to the server with API requests.
+
+- [Naive Double-Submit Cookie Pattern][owsap-naive-double-submit]
+  approach consists of the server generating a random token for the current user
+  session, and just passing it to the frontend _via_ cookie. To make an API
+  request the frontend is expected to read that token, and to pass it back to
+  the server as a part of the request payload, or in its header, while the browser
+  also includes into the request the original cookie. The server compares these
+  two token values (the one received in the cookie, with the one included into
+  the request payload or header), and if they match it proves that the request
+  intiator is a part of the page, able to read (or write) cookies set for that
+  origin. Beside the danger of [XSS] defeating this protection; if a bad actor
+  controls (or [XSS]'es) a sub-domain of protected domain, he will be able to
+  defeat it, because he can overwrite the original cookie set by the server for
+  protected domain, and thus bypass CSRF protection just by sending along with
+  request his own pair of matching cookie (token) values.
+
+  This mode of CSRF protection is provided by this library when
+  [`cookie` option](#cookie) is set `true`. It is also implemented somewhat
+  differently, to reuse the same code and logic used for the previous mode &mdash;
+  it generates a random secret for user session (though, it is not quite a secret,
+  it does not have to be in this scenario), then it generates a matching random
+  token, signed by that secret, and it sends them both to the frontend _via_
+  two different cookies. To make requests, the frontend is expected to read
+  the token from one of these cookies, and to include it into the request payload,
+  or header. Upon receiving the request server verifies that the token received
+  in the request payload (header) is signed by the secret received _via_
+  the corresponding cookie. Once again, this check does not rely at all on that
+  &laquo;secret&raquo; being secret, it just cares whether that &laquo;secret&raquo;
+  and the token are a matching pair or not &mdash; it would provide the same
+  protection if the frontend would just pass inside the request the &laquo;secret&raquo;
+  value itself, to be directly compared to its value in the cookie.
+
+- [Signed Double-Submit Cookie][owsap-csrf-double-submit]
+  approach is essentially the same, but it requires the cookie with token to be
+  signed and verified on the server side. This way, even if a bad actor controls
+  a sub-domain, and thus is able to overwrite the token cookie for the protected
+  domain, it will be detected by the server.
+
+  This mode of CSRF protection is provided by this library when
+  [`cookie` option](#cookie) is set to the object with cookie configuration
+  enabling the signature (`signed` flag). Because of the way it is implemented
+  (the token in request is verified against the &laquo;secret&raquo; stored in
+  one of these cookies), it is actually necessary to sign and protect from
+  modification that &laquo;secret&raquo; cookie, to which those
+  [`cookie` option](#cookie) is actually applied. Also, as the frontend
+  does not really need to know that &laquo;secret&raquo; to send requests,
+  it won't hurt to also opt for [`HttpOnly`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#httponly),
+  `secure`, and other security options for that cookie, although it is not quite
+  relevant for this mode of protection to work.
+
+**The drama** around the claim of [csurf] library being vulnerable started with
+[this article, &laquo;A CSRF Vulnerability in The Popular CSURF Package&raquo;](https://fortbridge.co.uk/research/a-csrf-vulnerability-in-the-popular-csurf-package).
+The problem is that security &laquo;expert&raquo; who wrote it does not quite
+understand neither CSRF protection, nor JavaScript, thus he just got confused
+with the library implementation details, briefly explained above ¯\\\_(ツ)_/¯
+Essentially, he argues that with the simple `cookie: true` setting the library
+does not correctly implement [Signed Double-Submit Cookie][owsap-csrf-double-submit]
+protection, as it does not sign the cookies it sets, it does not protect
+the &laquo;secret&raquo; cookie, and it does not check the value of cookie with
+token in subsequent API requests. Indeed, with that setting it correctly
+implements a variant of [Naive Double-Submit Cookie][owsap-naive-double-submit]
+protection, with its limitations not affecting most of simple websites.
+
+That article ends with a misleading claim that library developers acknowledged
+the bug, and deprecated the library because of it; while in reality the deprecation
+note in GitHub repo read &laquo;_This npm module is currently deprecated due to
+the large influx of security vulunerability reports received, most of which are
+simply exploiting the underlying limitations of CSRF itself. The Express.js
+project does not have the resources to put into this module, which is largely
+unnecessary for modern SPA-based applications._&raquo; &mdash; essentially
+saying &laquo;the library is fine, but we do not want to spend our time replying
+to each idiot who complains about this library's vulnerabilities, without
+understanding the matter&raquo;.
+
+In reality, the most dangerous moment about it was that deprecation of
+the original library, and re-telling of that article around Internet, encouraged
+developers to switch from this, long-standing CSURF library to one of many new
+CSRF-protection libraries written from scratch by different people. This both
+opens opportunities for dependency poisioning (_i.e._ somebody creates a new
+CSRF-protection library with some malicious code embedded in), or for honest
+mistakes (be sure, this long standing library had more eyes revising its
+implementation than any of its new alternatives out there). That's why this fork
+of the original CSURF came into existence &mdash; instead of trying my luck with
+a new alternative, I just forked this time-proven library, reviewed its code,
+just in case, updated dependencies, and converted the source codebase to
+TypeScript (just for the ease of future maintenance). The project is open-source,
+thus everybody is welcome to additionally review it and suggest any improvements
+or fixes.
+
+## Installation
+[Installation]: #installation
 
 Requires either a session middleware or [cookie-parser](https://www.npmjs.com/package/cookie-parser) to be initialized first.
 
@@ -68,8 +188,6 @@ Requires either a session middleware or [cookie-parser](https://www.npmjs.com/pa
 If you have questions on how this module is implemented, please read
 [Understanding CSRF](https://github.com/pillarjs/understanding-csrf).
 
-## Installation
-
 This is a [Node.js](https://nodejs.org/en/) module available through the
 [npm registry](https://www.npmjs.com/). Installation is done using the
 [`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
@@ -79,6 +197,7 @@ $ npm install --save @dr.pogodin/csurf
 ```
 
 ## API
+[API]: #api
 
 <!-- eslint-disable no-unused-vars -->
 
@@ -163,9 +282,11 @@ locations, in order:
   - `req.headers['x-csrf-token']` - the `X-CSRF-Token` HTTP request header.
   - `req.headers['x-xsrf-token']` - the `X-XSRF-Token` HTTP request header.
 
-## Example
+## Examples
+[Examples]: #examples
 
-### Simple express example
+### Simple ExpressJS Example
+[Simple ExpressJS Example]: #simple-expressjs-example
 
 The following is an example of some server-side code that generates a form
 that requires a CSRF token to post back.
@@ -211,6 +332,7 @@ input field named `_csrf`:
 ```
 
 #### Using AJAX
+[Using AJAX]: #using-ajax
 
 When accessing protected routes via ajax both the csrf token will need to be
 passed in the request. Typically this is done using a request header, as adding
@@ -253,6 +375,7 @@ fetch('/process', {
 ```
 
 #### Single Page Application (SPA)
+[Single Page Application (SPA)]: #single-page-application-spa
 
 Many SPA frameworks like Angular have CSRF support built in automatically.
 Typically they will reflect the value from a specific cookie, like
@@ -275,6 +398,7 @@ app.all('*', function (req, res) {
 ```
 
 ### Ignoring Routes
+[Ignoring Routes]: #ignoring-routes
 
 **Note** CSRF checks should only be disabled for requests that you expect to
 come from outside of your website. Do not disable CSRF checks for requests
@@ -325,7 +449,8 @@ function createApiRouter () {
 }
 ```
 
-### Custom error handling
+### Custom Error Handling
+[Custom Error Handling]: #custom-error-handling
 
 When the CSRF token validation fails, an error is thrown that has
 `err.code === 'EBADCSRFTOKEN'`. This can be used to display custom
@@ -352,20 +477,15 @@ app.use(function (err, req, res, next) {
 })
 ```
 
-## References
+<!-- References -->
 
-- [Cross-side request forgery on Wikipedia][wikipedia-csrf]
-- [OWASP Cross-Site Request Forgery Prevention Cheat Sheet][owsap-csrf]
-
-[owsap-csrf]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
-[owsap-csrf-double-submit]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie
-[wikipedia-csrf]: https://en.wikipedia.org/wiki/Cross-site_request_forgery
-
-## License
-
-[MIT](LICENSE)
-
-<!-- Links -->
-[csurf]: https://www.npmjs.com/package/csurf
 [@dr.pogodin/csurf]: https://www.npmjs.com/package/@dr.pogodin/csurf
+[csurf]: https://www.npmjs.com/package/csurf
 [ExpressJS]: https://expressjs.com
+[owasp-csrf]: https://owasp.org/www-community/attacks/csrf
+[owsap-csrf-cheatsheet]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+[owsap-csrf-double-submit]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#signed-double-submit-cookie-recommended
+[owsap-naive-double-submit]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#naive-double-submit-cookie-pattern-discouraged
+[`SameSite=None`]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#samesitesamesite-value
+[wikipedia-csrf]: https://en.wikipedia.org/wiki/Cross-site_request_forgery
+[XSS]: https://owasp.org/www-community/attacks/xss
