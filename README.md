@@ -20,6 +20,8 @@ Node.js [CSRF][wikipedia-csrf] protection middleware for [ExpressJS].
 ---
 _This is a fork of the original [csurf] package which was deprecated by its author with doubtful reasoning (in the nutshell the package was alright, but author did not want to maintain it anymore). It is published to NPM as [@dr.pogodin/csurf], its version **1.11.0** exactly matches the same, latest version of the original package, its versions starting from **1.12.0** have all dependencies updated to their latest versions, and misc maintenance performed as needed. To migrate from the original [csurf] just replace all references to it by [@dr.pogodin/csurf]._
 
+---
+
 ## Content
 - [CSRF Demystified]
 - [Installation]
@@ -30,7 +32,6 @@ _This is a fork of the original [csurf] package which was deprecated by its auth
     - [Single Page Application (SPA)]
   - [Ignoring Routes]
   - [Custom Error Handling]
-- [References]
 
 ## CSRF Demystified
 [CSRF Demystified]: #csrf-demystified
@@ -38,56 +39,52 @@ _This is a fork of the original [csurf] package which was deprecated by its auth
 **Crux of [the problem][owasp-csrf]** &mdash; if browser knows an authentication
 cookie for your domain, it will send it along with all HTTP(S) requests to your
 domain,<sup>[&dagger;](#remark-01)</sup> even with those triggered automatically
-by completely unrelated websites, thus allowing malicious third parties to make
-authenticated requests to your API on behalf of the user.
+by completely unrelated websites; thus allowing malicious third parties to make
+authenticated requests to your API on behalf of the user, if he has loaded
+their code by his browser.
 
 <sup id="remark-01">&dagger;</sup> It will be so if you have opted for
 [`SameSite=None`] for that cookie, or your user uses an outdated, or weird
 browser, as up until recently [`SameSite=None`] was the default cookie setting
-(_e.g._ [Chrome changed it `SameSite=Lax` in 2020](https://developers.google.com/search/blog/2020/01/get-ready-for-new-samesitenone-secure)).
+(_e.g._ [Chrome changed it to `SameSite=Lax` in 2020](https://developers.google.com/search/blog/2020/01/get-ready-for-new-samesitenone-secure)).
 Naturally, people who select such defaults as [`SameSite=None`] have since moved
 to senior positions, and now make six numbers teaching you about security, while
 you fall into the pitfalls they created, not expecting that anybody sane would
-design such default behavior.
+design such default behaviors.
 
-[owasp-csrf]: https://owasp.org/www-community/attacks/csrf
-[`SameSite=None`]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#samesitesamesite-value
+**[Three main ways to protect against CSRF][owsap-csrf-cheatsheet]**,
+implemented by this library, in the nutshell all verify that the initiator of
+HTTP(S) request is a part (legit or not) of your website running in the user's
+browser. Mind, although we keep saying HTTP(S), we actually mean that you only
+use HTTPS &mdash; if you are careless to permit unsecure HTTP connection to your
+backend, why would you care about CSRF at all?
 
----
-### Security Considerations
-[Double Submit Cookie]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie
-[XSS]: https://owasp.org/www-community/attacks/xss
+- [Synchronizer Token Pattern](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern)
+  approach consists of the server generating a random token for the user session,
+  and passing it to the user as a part of the HTML page (not _via_ a cookie, not
+  serving it _via_ a dedicated GET endpoint &mdash; these options would make
+  this approach useless). Every subsequent request to the server within that
+  session is expected to read that token from the page, and pass it along with
+  the request, thus proving that the request initiator is a part of the page
+  served to that user within the current session (as guessing the token value
+  would be problematic). Sure, a malicious code injected inside your page ([XSS])
+  would be able to do the same, and thus pass your CSRF protection, but if you
+  allow such injections, with or without CSRF protection you are fucked.
 
-- **[Double Submit Cookie]** &mdash; This mode of CSRF protection relies on
-  the inability of code from a 3rd-party origin to read/write cookies stored,
-  and sent by browser for the protected origin. Sure, there are ways you may
-  ruin it, if you don't know what you are doing:
+  This mode of CSRF protection is provided by this library when no
+  ["cookie" option](#cookie) is set. It is also implemented somewhat smarter,
+  as instead of remembering on server side the actual tokens issued to the user,
+  it instead generates and remembers a cryptographic secret for that user and
+  session, then uses it to generate random, signed tokens, and to later verify
+  tokens passed to the server with user requests.
 
-  - Serving your website over unsecure HTTP connection &mdash;
-    a man in the middle might read your cookies (and everything else)
-    you send over, and exploit your negligence in all posible ways,
-    including but not limited to by-passing double submit cookie CSRF
-    protection.
-  - Allowing [XSS] injection &mdash; if 3rd party is able to inject arbitrary
-    code inside your own website, sure they can read the cookie and by-pass CSRF
-    protection.
-  - Allowing 3rd parties to control your sub-domains (a code running on
-    sub-domain may shadow CSRF cookie set by the protected domain, thus allowing
-    to by-pass CSRF protection).
-  - _etc._
+- 
 
-  This library has options allowing to mitigate these possibilities (by opting
-  for various security options for CSRF cookies, which will instruct the browser
-  to not pass CSRF cookie over insecure connections, _etc._), but, by default,
-  the library does not enforce these options.
 
-  [Some argue](https://github.com/birdofpreyru/csurf/issues/1) that not
-  enforcing these options by default is against security, and requires
-  deprecation of the library (like happened to its upstream original);
-  IMHO, enforcing these options just adds headache in more common scenarios,
-  and here is no security issue with the library, as long as it does exactly
-  what users asks it to do.
----
+
+
+## Installation
+[Installation]: #installation
 
 Requires either a session middleware or [cookie-parser](https://www.npmjs.com/package/cookie-parser) to be initialized first.
 
@@ -100,9 +97,6 @@ Requires either a session middleware or [cookie-parser](https://www.npmjs.com/pa
 
 If you have questions on how this module is implemented, please read
 [Understanding CSRF](https://github.com/pillarjs/understanding-csrf).
-
-## Installation
-[Installation]: #installation
 
 This is a [Node.js](https://nodejs.org/en/) module available through the
 [npm registry](https://www.npmjs.com/). Installation is done using the
@@ -393,17 +387,14 @@ app.use(function (err, req, res, next) {
 })
 ```
 
-## References
-[References]: #references
-
-- [Cross-side request forgery on Wikipedia][wikipedia-csrf]
-- [OWASP Cross-Site Request Forgery Prevention Cheat Sheet][owsap-csrf-cheatsheet]
-
 <!-- References -->
 
 [@dr.pogodin/csurf]: https://www.npmjs.com/package/@dr.pogodin/csurf
 [csurf]: https://www.npmjs.com/package/csurf
 [ExpressJS]: https://expressjs.com
+[owasp-csrf]: https://owasp.org/www-community/attacks/csrf
 [owsap-csrf-cheatsheet]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
 [owsap-csrf-double-submit]: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie
+[`SameSite=None`]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#samesitesamesite-value
 [wikipedia-csrf]: https://en.wikipedia.org/wiki/Cross-site_request_forgery
+[XSS]: https://owasp.org/www-community/attacks/xss
