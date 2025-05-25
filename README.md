@@ -76,7 +76,8 @@ why would you care about CSRF at all?
   to read cookies set for that origin, or the actual HTML served for that user.
   Sure, a malicious code injected inside your page ([XSS]) will be able to do
   just the same, and thus to bypass your CSRF protection, however if you allow
-  such injectsion, with or without CSRF protection, you are fucked.
+  such injection, then there is no need to worry about CSRF protection &mdash;
+  with or without it you are fucked.
 
   This mode of CSRF protection is provided by this library when no
   [`cookie` option](#cookie) is set. It is also implemented somewhat smarter,
@@ -93,7 +94,7 @@ why would you care about CSRF at all?
   also includes into the request the original cookie. The server compares these
   two token values (the one received in the cookie, with the one included into
   the request payload or header), and if they match it proves that the request
-  intiator is a part of the page, able to read (or write) cookies set for that
+  initiator is a part of the page, able to read (or write) cookies set for that
   origin. Beside the danger of [XSS] defeating this protection; if a bad actor
   controls (or [XSS]'es) a sub-domain of protected domain, he will be able to
   defeat it, because he can overwrite the original cookie set by the server for
@@ -101,7 +102,7 @@ why would you care about CSRF at all?
   request his own pair of matching cookie (token) values.
 
   This mode of CSRF protection is provided by this library when
-  [`cookie` option](#cookie) is set `true`. It is also implemented somewhat
+  the [`cookie` option](#cookie) is set `true`. It is also implemented somewhat
   differently, to reuse the same code and logic used for the previous mode &mdash;
   it generates a random secret for user session (though, it is not quite a secret,
   it does not have to be in this scenario), then it generates a matching random
@@ -117,17 +118,17 @@ why would you care about CSRF at all?
   value itself, to be directly compared to its value in the cookie.
 
 - [Signed Double-Submit Cookie][owsap-csrf-double-submit]
-  approach is essentially the same, but it requires the cookie with token to be
-  signed and verified on the server side. This way, even if a bad actor controls
-  a sub-domain, and thus is able to overwrite the token cookie for the protected
-  domain, it will be detected by the server.
+  approach is essentially the same, but it requires the cookie with the token
+  to be signed and verified on the server side. This way, even if a bad actor
+  controls a sub-domain, and thus is able to overwrite the token cookie for
+  the protected domain, it will be detected by the server.
 
   This mode of CSRF protection is provided by this library when
-  [`cookie` option](#cookie) is set to the object with cookie configuration
+  the [`cookie` option](#cookie) is set to the object with cookie configuration
   enabling the signature (`signed` flag). Because of the way it is implemented
   (the token in request is verified against the &laquo;secret&raquo; stored in
   one of these cookies), it is actually necessary to sign and protect from
-  modification that &laquo;secret&raquo; cookie, to which those
+  modification of that &laquo;secret&raquo; cookie, to which that
   [`cookie` option](#cookie) is actually applied. Also, as the frontend
   does not really need to know that &laquo;secret&raquo; to send requests,
   it won't hurt to also opt for [`HttpOnly`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#httponly),
@@ -150,7 +151,7 @@ protection, with its limitations not affecting most of simple websites.
 That article ends with a misleading claim that library developers acknowledged
 the bug, and deprecated the library because of it; while in reality the deprecation
 note in GitHub repo read &laquo;_This npm module is currently deprecated due to
-the large influx of security vulunerability reports received, most of which are
+the large influx of security vulnerability reports received, most of which are
 simply exploiting the underlying limitations of CSRF itself. The Express.js
 project does not have the resources to put into this module, which is largely
 unnecessary for modern SPA-based applications._&raquo; &mdash; essentially
@@ -161,17 +162,18 @@ understanding the matter&raquo;.
 In reality, the most dangerous moment about it was that deprecation of
 the original library, and re-telling of that article around Internet, encouraged
 developers to switch from this, long-standing CSURF library to one of many new
-CSRF-protection libraries written from scratch by different people. This both
-opens opportunities for dependency poisioning (_i.e._ somebody creates a new
-CSRF-protection library with some malicious code embedded in), or for honest
-mistakes (be sure, this long standing library had more eyes revising its
-implementation than any of its new alternatives out there). That's why this fork
-of the original CSURF came into existence &mdash; instead of trying my luck with
-a new alternative, I just forked this time-proven library, reviewed its code,
-just in case, updated dependencies, and converted the source codebase to
-TypeScript (just for the ease of future maintenance). The project is open-source,
-thus everybody is welcome to additionally review it and suggest any improvements
-or fixes.
+CSRF-protection libraries written from scratch by different people (who don't
+notice anything wrong about that article, thus guess their level of competence
+in the subject). This both opens opportunities for dependency poisoning
+(_i.e._ somebody creates a new CSRF-protection library with some malicious code
+embedded in), or for honest mistakes (be sure, this long standing library had
+more eyes revising its implementation than any of its new alternatives out there).
+That's why this fork of the original CSURF came into existence &mdash; instead
+of trying my luck with a new alternative, I just forked this time-proven library,
+reviewed its code, just in case, updated dependencies, and converted the source
+codebase to TypeScript (just for the ease of future maintenance). The project is
+open-source, thus everybody is welcome to additionally review it and suggest any
+improvements or fixes.
 
 ## Installation
 [Installation]: #installation
