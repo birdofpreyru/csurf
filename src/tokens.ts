@@ -1,7 +1,8 @@
+import crypto from 'crypto';
+
 import rndm from 'rndm';
 import uid from 'uid-safe';
 import compare from 'tsscmp';
-import crypto from 'crypto';
 
 const EQUAL_GLOBAL_REGEXP = /=/g;
 const PLUS_GLOBAL_REGEXP = /\+/g;

@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { createServer as createHttpServer } from 'http';
 
 import express, {
   type Express,
@@ -7,7 +8,6 @@ import express, {
   type Response,
 } from 'express';
 
-import { createServer as createHttpServer } from 'http';
 import session from 'cookie-session';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
