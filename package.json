@@ -8,11 +8,11 @@
     "url": "https://github.com/birdofpreyru/csurf/issues"
   },
   "homepage": "https://dr.pogodin.studio/docs/csurf",
-  "main": "./build/mjs/index.js",
+  "main": "./build/mjs/index.mjs",
   "types": "./build/types/index.d.ts",
   "exports": {
     "require": "./cjs.js",
-    "default": "./build/mjs/index.js"
+    "default": "./build/mjs/index.mjs"
   },
   "dependencies": {
     "@babel/runtime": "^7.27.6",
@@ -42,6 +42,7 @@
     "@types/tsscmp": "^1.0.2",
     "@types/uid-safe": "^2.1.5",
     "babel-plugin-add-import-extension": "^1.6.0",
+    "babel-plugin-replace-import-extension": "^1.1.5",
     "body-parser": "^2.2.0",
     "cookie-parser": "^1.4.7",
     "cookie-session": "^2.1.0",
@@ -57,7 +58,7 @@
   "scripts": {
     "build": "rimraf build && npm run build:types && npm run build:cjs && npm run build:mjs",
     "build:cjs": "rimraf build/cjs && babel src -x .ts --out-dir build/cjs --source-maps",
-    "build:mjs": "rimraf build/mjs && babel src -x .ts --out-dir build/mjs --source-maps --config-file ./babel.module.config.js",
+    "build:mjs": "rimraf build/mjs && babel src -x .ts --out-dir build/mjs --source-maps --out-file-extension .mjs --config-file ./babel.module.config.js",
     "build:types": "rimraf build/types && tsc --project tsconfig.types.json",
     "lint": "eslint",
     "jest": "jest",
