@@ -1,5 +1,5 @@
-import assert from 'assert';
-import { createServer as createHttpServer } from 'http';
+import assert from 'node:assert';
+import { createServer as createHttpServer } from 'node:http';
 
 import express, {
   type Express,

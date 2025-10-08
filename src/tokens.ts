@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 import rndm from 'rndm';
 import uid from 'uid-safe';
