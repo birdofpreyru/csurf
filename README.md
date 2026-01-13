@@ -258,6 +258,12 @@ following keys:
 An array of the methods for which CSRF token checking will disabled.
 Defaults to `['GET', 'HEAD', 'OPTIONS']`.
 
+##### ignoreRequest
+
+An optional function with the signaure `(req: Request) => boolean`.
+If provided, the CSRF token check is skipped for every request that causes this
+function to return _true_.
+
 ##### sessionKey
 
 Determines what property ("key") on `req` the session object is located.

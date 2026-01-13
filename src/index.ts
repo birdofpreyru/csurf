@@ -36,6 +36,7 @@ type CookieOptions = {
 export type Options = TokensOptions & {
   cookie?: true | CookieOptions;
   ignoreMethods?: string[];
+  ignoreRequest?: (req: Request) => boolean;
   sessionKey?: string;
   value?: (req: Request) => string;
 };
@@ -335,7 +336,11 @@ function csurf(options: Options = {}) {
     }
 
     // verify the incoming token
-    if (!ignoreMethod[req.method] && !verify(secret, value(req))) {
+    if (
+      !ignoreMethod[req.method]
+      && !options.ignoreRequest?.(req)
+      && !verify(secret, value(req))
+    ) {
       next(createError(403, 'invalid csrf token', {
         code: 'EBADCSRFTOKEN',
       }));
