@@ -1,7 +1,7 @@
 {
   "name": "@dr.pogodin/csurf",
   "description": "CSRF token middleware for ExpressJS",
-  "version": "1.16.8",
+  "version": "1.16.9",
   "license": "MIT",
   "repository": "github:birdofpreyru/csurf",
   "bugs": {
@@ -26,11 +26,11 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
-    "@babel/core": "^7.28.6",
-    "@babel/plugin-transform-runtime": "^7.28.5",
-    "@babel/preset-env": "^7.28.6",
+    "@babel/core": "^7.29.0",
+    "@babel/plugin-transform-runtime": "^7.29.0",
+    "@babel/preset-env": "^7.29.0",
     "@babel/preset-typescript": "^7.28.5",
-    "@dr.pogodin/eslint-configs": "^0.1.3",
+    "@dr.pogodin/eslint-configs": "^0.2.7",
     "@tsconfig/recommended": "^1.0.13",
     "@types/cookie-parser": "^1.4.10",
     "@types/cookie-session": "^2.0.49",
@@ -49,7 +49,7 @@
     "cookie-session": "^2.1.1",
     "express": "^5.2.1",
     "jest": "^30.2.0",
-    "rimraf": "^6.1.2",
+    "rimraf": "^6.1.3",
     "supertest": "^7.2.2",
     "typescript": "^5.9.3"
   },
@@ -61,7 +61,7 @@
     "build:cjs": "rimraf build/cjs && babel src -x .ts --out-dir build/cjs --source-maps",
     "build:mjs": "rimraf build/mjs && babel src -x .ts --out-dir build/mjs --source-maps --out-file-extension .mjs --config-file ./babel.module.config.js",
     "build:types": "rimraf build/types && tsc --project tsconfig.types.json",
-    "lint": "eslint",
+    "lint": "eslint --cache",
     "jest": "jest",
     "test": "npm run lint && npm run jest"
   },

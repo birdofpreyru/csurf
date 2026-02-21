@@ -1,6 +1,11 @@
 import assert from 'node:assert';
 import { createServer as createHttpServer } from 'node:http';
 
+import bodyParser from 'body-parser';
+
+import cookieParser from 'cookie-parser';
+import session from 'cookie-session';
+
 import express, {
   type Express,
   type NextFunction,
@@ -8,9 +13,6 @@ import express, {
   type Response,
 } from 'express';
 
-import session from 'cookie-session';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
 import request, { type Response as SuperResponse } from 'supertest';
 
 import csurf, { type Options } from '../src';
@@ -32,7 +34,7 @@ function createServer(opts?: Options) {
   });
 
   // TODO: What is the best way to avoid type mismatch here?
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/strict-void-return
   return createHttpServer(app);
 }
 
@@ -65,7 +67,9 @@ describe('csurf', () => {
           .post('/')
           .set('Cookie', cookies(res))
           .send(`_csrf=${encodeURIComponent(token)}`)
-          .expect(200, done);
+          .expect(200, () => {
+            done();
+          });
       });
   });
 
@@ -86,7 +90,9 @@ describe('csurf', () => {
         request(server)
           .post(`/?_csrf=${encodeURIComponent(token)}`)
           .set('Cookie', cookies(res))
-          .expect(200, done);
+          .expect(200, () => {
+            done();
+          });
       });
   });
 
@@ -108,7 +114,9 @@ describe('csurf', () => {
           .post('/')
           .set('Cookie', cookies(res))
           .set('csrf-token', token)
-          .expect(200, done);
+          .expect(200, () => {
+            done();
+          });
       });
   });
 
@@ -130,7 +138,9 @@ describe('csurf', () => {
           .post('/')
           .set('Cookie', cookies(res))
           .set('xsrf-token', token)
-          .expect(200, done);
+          .expect(200, () => {
+            done();
+          });
       });
   });
 
@@ -152,7 +162,9 @@ describe('csurf', () => {
           .post('/')
           .set('Cookie', cookies(res))
           .set('x-csrf-token', token)
-          .expect(200, done);
+          .expect(200, () => {
+            done();
+          });
       });
   });
 
@@ -174,7 +186,9 @@ describe('csurf', () => {
           .post('/')
           .set('Cookie', cookies(res))
           .set('x-xsrf-token', token)
-          .expect(200, done);
+          .expect(200, () => {
+            done();
+          });
       });
   });
 
@@ -194,7 +208,9 @@ describe('csurf', () => {
           .post('/')
           .set('Cookie', cookies(res))
           .set('X-CSRF-Token', '42')
-          .expect(403, done);
+          .expect(403, () => {
+            done();
+          });
       });
   });
 
@@ -213,7 +229,9 @@ describe('csurf', () => {
         request(server)
           .post('/')
           .set('Cookie', cookies(res))
-          .expect(403, done);
+          .expect(403, () => {
+            done();
+          });
       });
   });
 
@@ -258,7 +276,9 @@ describe('csurf', () => {
           .post('/')
           .set('Cookie', cookies(res))
           .set('X-CSRF-Token', `${res.text}p`)
-          .expect(403, 'session has expired or form tampered with', done);
+          .expect(403, 'session has expired or form tampered with', () => {
+            done();
+          });
       });
   });
 
@@ -270,7 +290,9 @@ describe('csurf', () => {
 
     request(app)
       .get('/')
-      .expect(500, /misconfigured csrf/, done);
+      .expect(500, /misconfigured csrf/, () => {
+        done();
+      });
   });
 
   describe('with "cookie" option', () => {
@@ -297,7 +319,9 @@ describe('csurf', () => {
               .post('/')
               .set('Cookie', cookies(res))
               .set('X-CSRF-Token', token)
-              .expect(200, done);
+              .expect(200, () => {
+                done();
+              });
           });
       });
 
@@ -333,7 +357,9 @@ describe('csurf', () => {
               .post('/')
               .set('Cookie', cookies(res))
               .set('X-CSRF-Token', token)
-              .expect(200, done);
+              .expect(200, () => {
+                done();
+              });
           });
       });
     });
@@ -362,7 +388,9 @@ describe('csurf', () => {
               .post('/')
               .set('Cookie', cookies(res))
               .set('X-CSRF-Token', token)
-              .expect(200, done);
+              .expect(200, () => {
+                done();
+              });
           });
       });
 
@@ -389,7 +417,9 @@ describe('csurf', () => {
               .post('/')
               .set('Cookie', cookies(res))
               .set('X-CSRF-Token', token)
-              .expect(200, done);
+              .expect(200, () => {
+                done();
+              });
           });
       });
 
@@ -417,7 +447,9 @@ describe('csurf', () => {
                 .post('/')
                 .set('Cookie', cookies(res))
                 .set('X-CSRF-Token', token)
-                .expect(200, done);
+                .expect(200, () => {
+                  done();
+                });
             });
         });
 
@@ -430,7 +462,9 @@ describe('csurf', () => {
 
           request(app)
             .get('/')
-            .expect(500, /misconfigured csrf/, done);
+            .expect(500, /misconfigured csrf/, () => {
+              done();
+            });
         });
 
         // eslint-disable-next-line jest/no-done-callback
@@ -443,7 +477,9 @@ describe('csurf', () => {
 
           request(app)
             .get('/')
-            .expect(500, /misconfigured csrf/, done);
+            .expect(500, /misconfigured csrf/, () => {
+              done();
+            });
         });
       });
     });
@@ -480,7 +516,9 @@ describe('csurf', () => {
               request(server)
                 .put('/')
                 .set('Cookie', cookie2)
-                .expect(403, done);
+                .expect(403, () => {
+                  done();
+                });
             });
         });
     });
@@ -517,7 +555,9 @@ describe('csurf', () => {
           request(app)
             .post('/')
             .send(`_csrf=${encodeURIComponent(token)}`)
-            .expect(200, done);
+            .expect(200, () => {
+              done();
+            });
         });
     });
   });
@@ -536,7 +576,9 @@ describe('csurf', () => {
 
       request(app)
         .get('/')
-        .expect(200, 'true', done);
+        .expect(200, 'true', () => {
+          done();
+        });
     });
 
     // eslint-disable-next-line jest/no-done-callback
@@ -555,7 +597,9 @@ describe('csurf', () => {
       request(app)
         .get('/')
         .expect('x-run', 'true')
-        .expect(500, /misconfigured csrf/, done);
+        .expect(500, /misconfigured csrf/, () => {
+          done();
+        });
     });
   });
 
@@ -598,7 +642,9 @@ describe('csurf', () => {
             .post('/')
             .set('Cookie', cookies(res))
             .set('X-CSRF-Token', token)
-            .expect(200, done);
+            .expect(200, () => {
+              done();
+            });
         });
     });
 
@@ -617,7 +663,9 @@ describe('csurf', () => {
             .post('/')
             .set('Cookie', cookies(res))
             .set('X-CSRF-Token', token)
-            .expect(200, done);
+            .expect(200, () => {
+              done();
+            });
         });
     });
 
@@ -625,7 +673,9 @@ describe('csurf', () => {
     it('should error if session missing', (done) => {
       request(app)
         .get('/break')
-        .expect(500, /misconfigured csrf/, done);
+        .expect(500, /misconfigured csrf/, () => {
+          done();
+        });
     });
   });
 });

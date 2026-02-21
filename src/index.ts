@@ -1,8 +1,9 @@
-import type { NextFunction, Request, Response } from 'express';
-
 import { type SerializeOptions, serialize } from 'cookie';
-import createError from 'http-errors';
+
 import { sign } from 'cookie-signature';
+import type { NextFunction, Request, Response } from 'express';
+import createError from 'http-errors';
+
 import Tokens, { type Options as TokensOptions, verify } from './tokens';
 
 declare global {
@@ -34,7 +35,7 @@ type CookieOptions = {
 };
 
 export type Options = TokensOptions & {
-  cookie?: true | CookieOptions;
+  cookie?: CookieOptions | true;
   ignoreMethods?: string[];
   ignoreRequest?: (req: Request) => boolean;
   sessionKey?: string;
@@ -47,7 +48,7 @@ export type Options = TokensOptions & {
  * @param {boolean|object} [options]
  */
 function getCookieOptions(
-  options: boolean | Partial<CookieOptions> | undefined,
+  options: Partial<CookieOptions> | boolean | undefined,
 ): CookieOptions | undefined {
   if (options !== true && typeof options !== 'object') {
     return undefined;
@@ -80,11 +81,11 @@ function getCookieOptions(
  * @param req
  * @return
  */
-function defaultValue(req: Request<unknown, unknown, undefined | {
+function defaultValue(req: Request<unknown, unknown, {
   _csrf?: string;
-}, undefined | {
+} | undefined, {
   _csrf?: string;
-}>): string {
+} | undefined>): string {
   /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
   // eslint-disable-next-line no-underscore-dangle
   return (req.body?._csrf || req.query?._csrf
