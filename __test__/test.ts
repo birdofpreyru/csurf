@@ -20,11 +20,11 @@ import csurf, { type Options } from '../src';
 function createServer(opts?: Options) {
   const app = express();
 
-  if (!opts || !opts.cookie) {
-    app.use(session({ keys: ['a', 'b'] }) as () => void);
-  } else {
-    app.use(cookieParser('keyboard cat') as () => void);
-  }
+  app.use(
+    opts?.cookie
+      ? cookieParser('keyboard cat')
+      : session({ keys: ['a', 'b'] }),
+  );
 
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(csurf(opts));
