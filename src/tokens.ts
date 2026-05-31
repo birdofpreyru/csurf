@@ -1,24 +1,10 @@
-import crypto from 'node:crypto';
-
-import rndm from 'rndm';
-import compare from 'tsscmp';
-import uid from 'uid-safe';
-
-const EQUAL_GLOBAL_REGEXP = /=/g;
-const PLUS_GLOBAL_REGEXP = /\+/g;
-const SLASH_GLOBAL_REGEXP = /\//g;
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
 /**
  * Hash a string with SHA256, returning url-safe base64.
  */
 function hash(str: string): string {
-  return crypto
-    .createHash('sha256')
-    .update(str, 'ascii')
-    .digest('base64')
-    .replace(PLUS_GLOBAL_REGEXP, '-')
-    .replace(SLASH_GLOBAL_REGEXP, '_')
-    .replace(EQUAL_GLOBAL_REGEXP, '');
+  return createHash('sha256').update(str, 'ascii').digest('base64url');
 }
 
 /**
@@ -49,7 +35,11 @@ export function verify(secret: string, token: string): boolean {
   const salt = token.slice(0, index);
   const expected = privateTokenize(secret, salt);
 
-  return compare(token, expected);
+  try {
+    return timingSafeEqual(Buffer.from(token), Buffer.from(expected));
+  } catch {
+    return false;
+  }
 }
 
 export type Options = {
@@ -98,30 +88,21 @@ export default class Tokens {
       throw new TypeError('argument secret is required');
     }
 
-    return privateTokenize(secret, rndm(this.saltLength));
-  }
+    // Because a single base64 character encodes 6 bits of information,
+    // and one byte contains 8 bits; thus, for example to get 8-symbols long
+    // (default) base64 salt string we need to get only 6 random bytes.
+    const saltByteLength = Math.ceil(6 * this.saltLength / 8);
 
-  secret(): Promise<string>;
-  secret(callback: (err: unknown, str: string) => void): void;
+    const salt = randomBytes(saltByteLength)
+      .toString('base64url').slice(0, this.saltLength);
+
+    return privateTokenize(secret, salt);
+  }
 
   /**
    * Create a new secret key.
    */
-  secret(
-    callback?: (err: unknown, str: string) => void,
-  ): Promise<string> | undefined {
-    if (callback) {
-      uid(this.secretLength, callback);
-      return undefined;
-    }
-
-    return uid(this.secretLength);
-  }
-
-  /**
-   * Create a new secret key synchronously.
-   */
-  secretSync(): string {
-    return uid.sync(this.secretLength);
+  secret(): string {
+    return randomBytes(this.secretLength).toString('base64url');
   }
 }

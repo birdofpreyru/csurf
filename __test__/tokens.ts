@@ -1,4 +1,8 @@
+/* eslint-disable import/no-extraneous-dependencies */
+
 import assert from 'node:assert';
+
+import { beforeAll, describe, it } from '@jest/globals';
 
 import Tokens, { verify } from '../src/tokens';
 
@@ -74,11 +78,11 @@ describe('Tokens', () => {
         // 3 bytes = 4 base-64 characters
         // 4 bytes = 6 base-64 characters
         assert.strictEqual(
-          new Tokens({ secretLength: 3 }).secretSync().length,
+          new Tokens({ secretLength: 3 }).secret().length,
           4,
         );
         assert.strictEqual(
-          new Tokens({ secretLength: 4 }).secretSync().length,
+          new Tokens({ secretLength: 4 }).secret().length,
           6,
         );
       });
@@ -88,7 +92,7 @@ describe('Tokens', () => {
   describe('.create(secret)', () => {
     beforeAll(() => {
       tokens = new Tokens();
-      secret = tokens.secretSync();
+      secret = tokens.secret();
     });
 
     it('should require secret', () => {
@@ -138,85 +142,13 @@ describe('Tokens', () => {
     });
   });
 
-  describe('.secret(callback)', () => {
-    beforeAll(() => {
-      tokens = new Tokens();
-    });
-
-    it('should reject bad callback', () => {
-      assert.throws(async () => {
-        // @ts-expect-error "for test purposes"
-        await tokens.secret(42);
-      }, /argument callback/);
-    });
-
-    // eslint-disable-next-line jest/no-done-callback
-    it('should create a secret', (done) => {
-      tokens.secret((err, localSecret) => {
-        assert.ifError(err);
-        assert.ok(typeof localSecret === 'string');
-        assert.ok(localSecret.length > 0);
-        done();
-      });
-    });
-  });
-
   describe('.secret()', () => {
     beforeAll(() => {
       tokens = new Tokens();
     });
 
-    describe('with global Promise', () => {
-      beforeAll(() => {
-        global.Promise = Promise;
-      });
-
-      afterAll(() => {
-        // @ts-expect-error "for test purposes"
-        global.Promise = undefined;
-      });
-
-      it(
-        'should create a secret',
-        async () => tokens.secret().then((localSecret) => {
-          assert.ok(typeof localSecret === 'string');
-          assert.ok(localSecret.length > 0);
-        }),
-      );
-    });
-
-    describe('without global Promise', () => {
-      beforeAll(() => {
-        // @ts-expect-error "for test purposes"
-        global.Promise = undefined;
-      });
-
-      afterAll(() => {
-        global.Promise = Promise;
-      });
-
-      it('should require callback', () => {
-        assert.throws(async () => {
-          await tokens.secret();
-        }, /argument callback.*required/);
-      });
-
-      it('should reject bad callback', () => {
-        assert.throws(async () => {
-          // @ts-expect-error "for test purposes"
-          await tokens.secret(42);
-        }, /argument callback/);
-      });
-    });
-  });
-
-  describe('.secretSync()', () => {
-    beforeAll(() => {
-      tokens = new Tokens();
-    });
-
     it('should create a secret', () => {
-      const localSecret = tokens.secretSync();
+      const localSecret = tokens.secret();
       assert.ok(typeof localSecret === 'string');
       assert.ok(localSecret.length > 0);
     });
@@ -225,7 +157,7 @@ describe('Tokens', () => {
   describe('.verify(secret, token)', () => {
     beforeAll(() => {
       tokens = new Tokens();
-      secret = tokens.secretSync();
+      secret = tokens.secret();
     });
 
     it('should return `true` with valid tokens', () => {
@@ -235,7 +167,7 @@ describe('Tokens', () => {
 
     it('should return `false` with invalid tokens', () => {
       const token = tokens.create(secret);
-      assert.ok(!verify(tokens.secretSync(), token));
+      assert.ok(!verify(tokens.secret(), token));
       assert.ok(!verify('asdfasdfasdf', token));
     });
 

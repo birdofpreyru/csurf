@@ -317,7 +317,7 @@ function csurf(options: Options = {}) {
 
       // generate & set new secret
       if (sec === undefined) {
-        sec = tokens.secretSync();
+        sec = tokens.secret();
         setSecret(req, res, sessionKey, sec, cookie);
       }
 
@@ -332,7 +332,7 @@ function csurf(options: Options = {}) {
 
     // generate & set secret
     if (!secret) {
-      secret = tokens.secretSync();
+      secret = tokens.secret();
       setSecret(req, res, sessionKey, secret, cookie);
     }
 
