@@ -35,8 +35,9 @@ jobs:
           steps:
             *install-and-test
       - run: npm run build
-      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-      - run: npm publish --access public
+      - run: |
+          export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
+          npm publish --access public
 
 test-filters: &test-filters
   filters:
