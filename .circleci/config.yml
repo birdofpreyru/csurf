@@ -23,7 +23,7 @@ jobs:
       *install-and-test
   test-node-26: # Current, EOL 2029-04-30.
     docker:
-      - image: cimg/node:26.2
+      - image: cimg/node:26.3
     steps:
       *install-and-test
   release:
