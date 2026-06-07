@@ -2,6 +2,7 @@
   "collectCoverage": true,
   "collectCoverageFrom": ["src/**/*.{js,jsx,ts,tsx}"],
   "coverageDirectory": "__coverage__",
+  "testMatch": ["**/__test__/*.ts"],
   "transform": {
     "\\.(j|t)sx?$": "babel-jest"
   }

@@ -93,8 +93,14 @@ export default class Tokens {
     // (default) base64 salt string we need to get only 6 random bytes.
     const saltByteLength = Math.ceil(6 * this.saltLength / 8);
 
+    // CAREFUL: The salt is expected (a) to be URL-safe (hence, the "base64url"
+    // encoding); (b) contain no "-" (dash) characters (as the first dash in
+    // the generated CSRF token is relied upon to split its salt and payload;
+    // hence the "-" replacement by "_").
     const salt = randomBytes(saltByteLength)
-      .toString('base64url').slice(0, this.saltLength);
+      .toString('base64url')
+      .replace(/-/g, '_')
+      .slice(0, this.saltLength);
 
     return privateTokenize(secret, salt);
   }

@@ -2,12 +2,24 @@
 
 import assert from 'node:assert';
 
-import { beforeAll, describe, it } from '@jest/globals';
+import {
+  beforeAll,
+  describe,
+  expect,
+  it,
+} from '@jest/globals';
 
 import Tokens, { verify } from '../src/tokens';
 
 let secret: string;
 let tokens: Tokens;
+
+/**
+ * Returns "true" if the given string is URL-safe; returns "false" otherwise.
+ */
+function isUrlSafe(s: string): boolean {
+  return s === encodeURIComponent(s);
+}
 
 describe('Tokens', () => {
   describe('options', () => {
@@ -135,9 +147,7 @@ describe('Tokens', () => {
     it('should not contain /, +, or =', () => {
       for (let i = 0; i < 1000; i++) {
         const token = tokens.create(secret);
-        assert(!token.includes('/'));
-        assert(!token.includes('+'));
-        assert(!token.includes('='));
+        assert(isUrlSafe(token));
       }
     });
   });
@@ -186,4 +196,95 @@ describe('Tokens', () => {
       assert(!verify(secret, 'hi'));
     });
   });
+});
+
+/**
+ * Returns a character with the code equal to that of `char` plus `n`.
+ */
+function bumpCharCode(char: string, n: number): string {
+  return String.fromCharCode(char.charCodeAt(0) + n);
+}
+
+/**
+ * Generates (a non-crypto-secure) random character, from the Base64 URL set,
+ * different from the given character `c` and "-".
+ */
+function randomCharOtherThan(c: string): string {
+  let res: string;
+
+  // See: https://en.wikipedia.org/wiki/Base64#Alphabet
+  const idx = Math.floor(64 * Math.random());
+  if (idx < 26) res = bumpCharCode('A', idx);
+  else if (idx < 52) res = bumpCharCode('a', idx - 26);
+  else if (idx < 62) res = bumpCharCode('0', idx - 52);
+  else res = '_'; // "_" for both `idx` 62 and 63, to avoid "-".
+
+  return res === c ? randomCharOtherThan(c) : res;
+}
+
+/**
+ * Returns a copy of `s` with the character at index `idx` replaced by
+ * the given `char`.
+ */
+function replaceCharAt(s: string, idx: number, char: string): string {
+  return `${s.slice(0, idx)}${char}${s.slice(idx + 1)}`;
+}
+
+/**
+ * Returns a copy of `s` with the character at index `idx` replaced by
+ * a different, random character, different from "-".
+ */
+function mutated(s: string, idx: number): string {
+  const char = randomCharOtherThan(s.slice(idx, idx + 1));
+  return replaceCharAt(s, idx, char);
+}
+
+/**
+ * Generate (a non-crypto-secure) random string of the given `length`,
+ * with characters from the Base64 URL set, different from "-".
+ */
+function randomString(length: number): string {
+  let res = '';
+  for (let i = 0; i < length; ++i) {
+    res += randomCharOtherThan('-');
+  }
+  return res;
+}
+
+it('must pass extensive test', () => {
+  tokens = new Tokens();
+  secret = tokens.secret();
+
+  // The number of trials. As we are testing with randomly generated tokens,
+  // repeating the test loop N times verifies that the chance that something
+  // does not work correctly is less or about 1 in N. The current value 10 000
+  // means the chance of error at, or below 0.01%.
+  const N = 10000;
+
+  // NOTE: It is tempting to also time successful and failed verifications here,
+  // to test resilence to the timing attacks; however, I believe, with just
+  // 10 000 iterations, and these, non-specifically designed, mutations of
+  // the valid token it is not possible. To test that, one should code a real
+  // timing attack logic, which works for a non-timing-safe token validation,
+  // and then verify that it fails with the actual validation algorithm.
+  for (let i = 0; i < N; ++i) {
+    const token = tokens.create(secret);
+
+    expect(isUrlSafe(token)).toBe(true);
+
+    // Verification of a valid token.
+    expect(verify(secret, token)).toBe(true);
+
+    const dashIdx = token.indexOf('-');
+
+    // Verification of bad tokens, different from the valid one by a single
+    // character at selected positions.
+    expect(verify(secret, mutated(token, 0))).toBe(false);
+    expect(verify(secret, mutated(token, dashIdx + 1))).toBe(false);
+    expect(verify(secret, mutated(token, token.length - 1))).toBe(false);
+
+    // Verification of a random, wrong token.
+    const badToken = replaceCharAt(randomString(token.length), dashIdx, '-');
+    expect(verify(secret, badToken)).toBe(false);
+  }
 });
