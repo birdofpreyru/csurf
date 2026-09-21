@@ -1,4 +1,4 @@
-import { type SerializeOptions, serialize } from 'cookie';
+import { type SerializeOptions, stringifySetCookie } from 'cookie';
 
 import { sign } from 'cookie-signature';
 import type { NextFunction, Request, Response } from 'express';
@@ -22,15 +22,8 @@ declare global {
   }
 }
 
-// TODO: This should come from a cookie library.
-type CookieOptions = {
-  domain?: string;
-  httpOnly?: boolean;
-  key: string;
-  maxAge?: number;
-  path: string;
-  sameSite?: 'lax' | 'none' | 'strict' | true;
-  secure?: boolean;
+type CookieOptions = SerializeOptions & {
+  key: string; // maps to `name` of stringifySetCookie().
   signed?: boolean;
 };
 
@@ -185,7 +178,22 @@ function setCookie(
   val: string,
   options: SerializeOptions,
 ) {
-  const data = serialize(name, val, options);
+  const data = stringifySetCookie({
+    ...options,
+    name,
+    value: val,
+
+  // NOTE: The documentation of "cookie" package
+  // (https://www.npmjs.com/package/cookie#options-3)
+  // says encodeURIComponent() is the default encoder, but it is not -
+  // as of the latest "cookie@2.0.1" it is rather the optimized function
+  // https://github.com/jshttp/cookie/blob/51c485421a95ee796de6d8dab53a5ade0a20db8a/src/index.ts#L526-L531
+  // that avoids encoding cookies with characters permitted inside "cookie-octet",
+  // but forbidden inside URI components. At least for now, let's stick to
+  // the encodeURIComponent() to preserve behavior of the previous versions of
+  // csurf library.
+  }, { encode: encodeURIComponent });
+
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const rawPrev = res.getHeader('set-cookie') || [];
   const prev = typeof rawPrev === 'number' ? rawPrev.toString() : rawPrev;

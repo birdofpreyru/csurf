@@ -15,6 +15,8 @@ import express, {
 
 import request, { type Response as SuperResponse } from 'supertest';
 
+import { beforeAll, describe, it } from '@jest/globals';
+
 import csurf, { type Options } from '../src';
 
 function createServer(opts?: Options) {
@@ -55,7 +57,7 @@ describe('csurf', () => {
 
     request(server)
       .get('/')
-      .expect(200, (err: unknown, res) => {
+      .expect(200, (err: Error | undefined, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -79,7 +81,7 @@ describe('csurf', () => {
 
     request(server)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: Error | undefined, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -102,7 +104,7 @@ describe('csurf', () => {
 
     request(server)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: Error | undefined, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -126,7 +128,7 @@ describe('csurf', () => {
 
     request(server)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: Error | undefined, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -150,7 +152,7 @@ describe('csurf', () => {
 
     request(server)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: Error | undefined, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -174,7 +176,7 @@ describe('csurf', () => {
 
     request(server)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: Error | undefined, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -198,7 +200,7 @@ describe('csurf', () => {
 
     request(server)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: Error | undefined, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -220,7 +222,7 @@ describe('csurf', () => {
 
     request(server)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: Error | undefined, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -266,7 +268,7 @@ describe('csurf', () => {
 
     request(app)
       .get('/')
-      .expect(200, (err, res) => {
+      .expect(200, (err: Error | undefined, res) => {
         // eslint-disable-next-line jest/no-conditional-in-test
         if (err) {
           done(err);
@@ -303,7 +305,7 @@ describe('csurf', () => {
 
         request(server)
           .get('/')
-          .expect(200, (err, res) => {
+          .expect(200, (err: Error | undefined, res) => {
             // eslint-disable-next-line jest/no-conditional-in-test
             if (err) {
               done(err);
@@ -342,7 +344,7 @@ describe('csurf', () => {
 
         request(app)
           .get('/')
-          .expect(200, (err, res) => {
+          .expect(200, (err: Error | undefined, res) => {
             // eslint-disable-next-line jest/no-conditional-in-test
             if (err) {
               done(err);
@@ -367,12 +369,11 @@ describe('csurf', () => {
     describe('when an object', () => {
       // eslint-disable-next-line jest/no-done-callback
       it('should configure the cookie name with "key"', (done) => {
-        // @ts-expect-error "error for test purposes"
         const server = createServer({ cookie: { key: '_customcsrf' } });
 
         request(server)
           .get('/')
-          .expect(200, (err, res) => {
+          .expect(200, (err: Error | undefined, res) => {
             // eslint-disable-next-line jest/no-conditional-in-test
             if (err) {
               done(err);
@@ -401,7 +402,7 @@ describe('csurf', () => {
 
         request(server)
           .get('/')
-          .expect(200, (err, res) => {
+          .expect(200, (err: Error | undefined, res) => {
             // eslint-disable-next-line jest/no-conditional-in-test
             if (err) {
               done(err);
@@ -431,7 +432,7 @@ describe('csurf', () => {
 
           request(server)
             .get('/')
-            .expect(200, (err, res) => {
+            .expect(200, (err: Error | undefined, res) => {
               // eslint-disable-next-line jest/no-conditional-in-test
               if (err) {
                 done(err);
@@ -497,7 +498,7 @@ describe('csurf', () => {
 
       request(server)
         .get('/')
-        .expect(200, (err, res) => {
+        .expect(200, (err: Error | undefined, res) => {
           // eslint-disable-next-line jest/no-conditional-in-test
           if (err) {
             done(err);
@@ -507,7 +508,7 @@ describe('csurf', () => {
           request(server)
             .post('/')
             .set('Cookie', cookie2)
-            .expect(200, (err2) => {
+            .expect(200, (err2: Error | undefined) => {
               // eslint-disable-next-line jest/no-conditional-in-test
               if (err2) {
                 done(err2);
@@ -544,7 +545,7 @@ describe('csurf', () => {
 
       request(app)
         .get('/')
-        .expect(200, (err, res) => {
+        .expect(200, (err: Error | undefined, res) => {
           // eslint-disable-next-line jest/no-conditional-in-test
           if (err) {
             done(err);
@@ -631,7 +632,7 @@ describe('csurf', () => {
     it('should work with a valid token', (done) => {
       request(app)
         .get('/')
-        .expect(200, (err, res) => {
+        .expect(200, (err: Error | undefined, res) => {
           // eslint-disable-next-line jest/no-conditional-in-test
           if (err) {
             done(err);
@@ -652,7 +653,7 @@ describe('csurf', () => {
     it('should provide a valid token when session regenerated', (done) => {
       request(app)
         .get('/new')
-        .expect(200, (err, res) => {
+        .expect(200, (err: Error | undefined, res) => {
           // eslint-disable-next-line jest/no-conditional-in-test
           if (err) {
             done(err);
