@@ -3,8 +3,8 @@
   "compilerOptions": {
     "declaration": true,
     "isolatedModules": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "noUncheckedIndexedAccess": true,
     "outDir": "build",
     "paths": {

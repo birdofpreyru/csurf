@@ -24,7 +24,6 @@
     "@babel/core": "^8.0.7",
     "@babel/preset-env": "^8.0.7",
     "@babel/preset-typescript": "^8.0.7",
-    "@dr.pogodin/babel-plugin-add-import-extension": "^3.0.2",
     "@dr.pogodin/eslint-configs": "^0.3.7",
     "@jest/globals": "^30.5.2",
     "@tsconfig/recommended": "^1.0.13",
