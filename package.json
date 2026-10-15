@@ -1,7 +1,7 @@
 {
   "name": "@dr.pogodin/csurf",
   "description": "CSRF token middleware for ExpressJS",
-  "version": "1.18.1",
+  "version": "1.18.2",
   "license": "MIT",
   "repository": "github:birdofpreyru/csurf",
   "bugs": {
@@ -20,13 +20,13 @@
     "http-errors": "^2.0.1"
   },
   "devDependencies": {
-    "@babel/cli": "^8.0.0",
-    "@babel/core": "^8.0.0",
-    "@babel/preset-env": "^8.0.0",
-    "@babel/preset-typescript": "^8.0.0",
+    "@babel/cli": "^8.0.6",
+    "@babel/core": "^8.0.7",
+    "@babel/preset-env": "^8.0.7",
+    "@babel/preset-typescript": "^8.0.7",
     "@dr.pogodin/babel-plugin-add-import-extension": "^3.0.2",
     "@dr.pogodin/eslint-configs": "^0.3.7",
-    "@jest/globals": "^30.5.1",
+    "@jest/globals": "^30.5.2",
     "@tsconfig/recommended": "^1.0.13",
     "@types/cookie-parser": "^1.4.10",
     "@types/cookie-session": "^2.0.49",
@@ -39,9 +39,9 @@
     "cookie-parser": "^1.4.7",
     "cookie-session": "^2.1.1",
     "express": "^5.2.1",
-    "jest": "^30.5.0",
+    "jest": "^30.5.2",
     "rimraf": "^6.1.3",
-    "supertest": "^7.2.2",
+    "supertest": "^7.3.1",
     "typescript": "^6.0.3"
   },
   "engines": {
@@ -49,7 +49,7 @@
   },
   "scripts": {
     "build": "rimraf build && npm run build:types && npm run build:logic",
-    "build:logic": "rimraf build/logic && babel src -x .ts --out-dir build/logic --source-maps --config-file ./babel.build.config.js",
+    "build:logic": "rimraf build/logic && BABEL_ENV=production babel src -x .ts --out-dir build/logic --source-maps --config-file ./babel.build.config.js",
     "build:types": "rimraf build/types && tsc --project tsconfig.types.json",
     "lint": "eslint --cache --cache-strategy content",
     "jest": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest",
