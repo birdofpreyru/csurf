@@ -2,6 +2,7 @@
   "extends": "@tsconfig/recommended",
   "compilerOptions": {
     "declaration": true,
+    "isolatedModules": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noUncheckedIndexedAccess": true,
