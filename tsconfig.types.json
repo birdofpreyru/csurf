@@ -4,9 +4,10 @@
   "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": true,
+    "isolatedModules": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "outDir": "build/types",
+    "outDir": "build",
     "rootDir": "./src",
     "strict": true,
     "verbatimModuleSyntax": true

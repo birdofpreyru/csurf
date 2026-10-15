@@ -8,11 +8,11 @@
     "url": "https://github.com/birdofpreyru/csurf/issues"
   },
   "homepage": "https://dr.pogodin.studio/docs/csurf",
-  "main": "./build/logic/index.js",
-  "types": "./build/types/index.d.ts",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
   "exports": {
-    "types": "./build/types/index.d.ts",
-    "default": "./build/logic/index.js"
+    "types": "./build/index.d.ts",
+    "default": "./build/index.js"
   },
   "dependencies": {
     "cookie": "^2.0.1",
@@ -49,8 +49,8 @@
   },
   "scripts": {
     "build": "rimraf build && npm run build:types && npm run build:logic",
-    "build:logic": "rimraf build/logic && BABEL_ENV=production babel src -x .ts --out-dir build/logic --source-maps --config-file ./babel.build.config.js",
-    "build:types": "rimraf build/types && tsc --project tsconfig.types.json",
+    "build:logic": "BABEL_ENV=production babel src -x .ts --out-dir build --source-maps --config-file ./babel.build.config.js",
+    "build:types": "tsc --project tsconfig.types.json",
     "lint": "eslint --cache --cache-strategy content",
     "jest": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest",
     "test": "npm run lint && npm run jest"

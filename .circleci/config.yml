@@ -1,4 +1,4 @@
-install-and-test: &install-and-test
+install-and-test: &install-build-test
   - checkout
   - restore_cache:
       key: node-modules-{{ checksum "package-lock.json" }}
@@ -7,20 +7,21 @@ install-and-test: &install-and-test
       key: node-modules-{{ checksum "package-lock.json" }}
       paths:
         - node_modules
+  - run: npm run build
   - run: npm test
 
 version: 2.1
 jobs:
   test-node-24: # Active LTS, EOL 2028-04-30.
     docker:
-      - image: cimg/node:24.21
+      - image: cimg/node:24.22
     steps:
-      *install-and-test
+      *install-build-test
   test-node-26: # Current, EOL 2029-04-30.
     docker:
-      - image: cimg/node:26.9
+      - image: cimg/node:26.12
     steps:
-      *install-and-test
+      *install-build-test
   release:
     docker:
       - image: cimg/node:lts
@@ -28,8 +29,7 @@ jobs:
       - when:
           condition: true
           steps:
-            *install-and-test
-      - run: npm run build
+            *install-build-test
       - run: |
           export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
           npm publish --access public

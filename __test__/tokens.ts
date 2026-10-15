@@ -7,7 +7,7 @@ import {
   it,
 } from '@jest/globals';
 
-import Tokens, { verify } from '../src/tokens';
+import Tokens, { verify } from '../build/tokens';
 
 let secret: string;
 let tokens: Tokens;

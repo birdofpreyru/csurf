@@ -4,7 +4,7 @@ import { sign } from 'cookie-signature';
 import type { NextFunction, Request, Response } from 'express';
 import createError from 'http-errors';
 
-import Tokens, { type Options as TokensOptions, verify } from './tokens';
+import Tokens, { type Options as TokensOptions, verify } from './tokens.js';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace

@@ -17,7 +17,7 @@ import request, { type Response as SuperResponse } from 'supertest';
 
 import { beforeAll, describe, it } from '@jest/globals';
 
-import csurf, { type Options } from '../src';
+import csurf, { type Options } from '../build';
 
 function createServer(opts?: Options) {
   const app = express();
